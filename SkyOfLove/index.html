@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="i.ico" type="image/x-icon">
+  <title>Sky of Love</title>
+  <style>
+    @font-face {
+      font-family: 'MyFont';
+      src: url('./DF.ttf') format('truetype');
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(135deg, #1e2a38, #16202b);
+      color: #cfd8dc;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    #musicButton {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: linear-gradient(45deg, #ff679a, #63c7c7);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(255, 103, 154, 0.3);
+    }
+
+    #musicButton:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 103, 154, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+  <button id="musicButton">🎵 Phát nhạc</button>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+
+  <script>
+    // Mảng chuỗi cho văn bản
+    const textLines = [
+      "Anh yêu em ❤️",
+      "Yêu em",
+      "Em là tất cả của anh",
+      "🌻",
+      "🌷",
+      "Cảm ơn em đã đến",
+      "🌼",
+      "Em là món quà tuyệt nhất",
+      "🌷",
+      "Anh sẽ nắm tay em mãi mãi",
+      "🍀",
+      "Mãi mãi bên nhau",
+      "🌹",
+      "Hạnh phúc khi bên em",
+      "🌺",
+      "Em là ánh sáng của anh",
+      "🌸",
+      "Anh sẽ yêu em mãi mãi",
+      "🌹"
+    ];
+
+    // Mảng chuỗi cho link ảnh, ảnh vuông
+    const images = [
+      "./image/i1.jpg",
+      "./image/i2.jpeg",
+      "./image/i3.jpeg",
+      "./image/i4.jpeg",
+      "./image/i5.jpeg",
+      "./image/i6.jpeg"
+    ];
+
+    // Địa chỉ nhạc - tự động phát khi load trang
+    const musicPath = "./LeDuong.mp3";
+
+    let audio = null;
+    let isPlaying = false;
+
+    // Khởi tạo audio
+    function initAudio() {
+      if (!audio) {
+        try {
+          audio = new Audio(musicPath);
+          audio.loop = true;
+          audio.volume = 1.0;
+
+          audio.addEventListener('play', () => {
+            isPlaying = true;
+            document.getElementById('musicButton').textContent = '⏸️ Tạm dừng';
+            console.log('Nhạc đang phát');
+          });
+
+          audio.addEventListener('pause', () => {
+            isPlaying = false;
+            document.getElementById('musicButton').textContent = '🎵 Phát nhạc';
+            console.log('Nhạc đã tạm dừng');
+          });
+
+          audio.addEventListener('error', (e) => {
+            console.error('Lỗi audio:', e);
+          });
+        } catch (error) {
+          console.error('Lỗi khởi tạo audio:', error);
+        }
+      }
+    }
+
+    // Hàm phát nhạc khi người dùng tương tác
+    function playMusicOnInteraction() {
+      if (!audio) {
+        initAudio();
+      }
+      if (!isPlaying) {
+        audio.play().catch(error => {
+          console.error('Không thể phát nhạc:', error);
+        });
+      }
+    }
+
+    // Xử lý nút play/pause
+    function toggleMusic() {
+      if (!audio) {
+        initAudio();
+      }
+
+      if (isPlaying) {
+        audio.pause();
+      } else {
+        audio.play().catch(error => {
+          console.error('Không thể phát nhạc:', error);
+        });
+      }
+    }
+
+    // Scene setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
+    camera.position.z = 400;
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      preserveDrawingBuffer: true,
+      powerPreference: "high-performance"
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.NoToneMapping;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    document.body.appendChild(renderer.domElement);
+
+    // Tạo ngôi sao
+    const starGeo = new THREE.BufferGeometry();
+    const starCount = 1000;
+    const starPos = [];
+
+    for (let i = 0; i < starCount; i++) {
+      const r = THREE.MathUtils.randFloat(200, 1000); // Giảm phạm vi
+      const u = THREE.MathUtils.randFloat(-1, 1);
+      const theta = Math.acos(Math.max(-1, Math.min(1, u)));
+      const phi = THREE.MathUtils.randFloat(0, 2 * Math.PI);
+
+      const x = r * Math.sin(theta) * Math.cos(phi);
+      const y = r * Math.sin(theta) * Math.sin(phi);
+      const z = r * Math.cos(theta);
+
+      if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+        starPos.push(x, y, z);
+      }
+    }
+
+    starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+
+    // Tạo texture hình tròn cho ngôi sao
+    const starCanvas = document.createElement('canvas');
+    starCanvas.width = 32;
+    starCanvas.height = 32;
+    const starCtx = starCanvas.getContext('2d');
+
+    // Vẽ hình tròn
+    starCtx.fillStyle = '#FFCE45';
+    starCtx.beginPath();
+    starCtx.arc(16, 16, 12, 0, 2 * Math.PI);
+    starCtx.fill();
+
+    const starTexture = new THREE.CanvasTexture(starCanvas);
+    const starsMat = new THREE.PointsMaterial({
+      color: 0xFFCE45,
+      size: 5,
+      transparent: true,
+      opacity: 0.7,
+      sizeAttenuation: true,
+      map: starTexture
+    });
+    scene.add(new THREE.Points(starGeo, starsMat));
+
+    // Thêm ngôi sao gần hơn để tạo hiệu ứng đẹp
+    const nearStarGeo = new THREE.BufferGeometry();
+    const nearStarCount = 200;
+    const nearStarPos = [];
+    for (let i = 0; i < nearStarCount; i++) {
+      const r = THREE.MathUtils.randFloat(200, 600);
+      const theta = Math.acos(THREE.MathUtils.randFloatSpread(2));
+      const phi = THREE.MathUtils.randFloat(2 * Math.PI);
+      nearStarPos.push(
+        r * Math.sin(theta) * Math.cos(phi),
+        r * Math.sin(theta) * Math.sin(phi),
+        r * Math.cos(theta)
+      );
+    }
+    nearStarGeo.setAttribute('position', new THREE.Float32BufferAttribute(nearStarPos, 3));
+
+    // Tạo texture hình tròn cho ngôi sao gần
+    const nearStarCanvas = document.createElement('canvas');
+    nearStarCanvas.width = 32;
+    nearStarCanvas.height = 32;
+    const nearStarCtx = nearStarCanvas.getContext('2d');
+
+    // Vẽ hình tròn
+    nearStarCtx.fillStyle = '#ffffff';
+    nearStarCtx.beginPath();
+    nearStarCtx.arc(16, 16, 12, 0, 2 * Math.PI);
+    nearStarCtx.fill();
+
+    const nearStarTexture = new THREE.CanvasTexture(nearStarCanvas);
+    const nearStarsMat = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 12,
+      transparent: true,
+      opacity: 0.2,
+      sizeAttenuation: true,
+      map: nearStarTexture
+    });
+    scene.add(new THREE.Points(nearStarGeo, nearStarsMat));
+
+    // Images and text
+    const textureLoader = new THREE.TextureLoader();
+    const group = new THREE.Group();
+    scene.add(group);
+
+    function randomPosOnSphere(radius) {
+      const theta = Math.acos(THREE.MathUtils.randFloatSpread(2));
+      const phi = THREE.MathUtils.randFloatSpread(2 * Math.PI);
+      return new THREE.Vector3(
+        radius * Math.sin(theta) * Math.cos(phi),
+        radius * Math.sin(theta) * Math.sin(phi),
+        radius * Math.cos(theta)
+      );
+    }
+
+    function createTextSprite(text) {
+      const canvas = document.createElement('canvas');
+      const size = 512;
+      canvas.width = size;
+      canvas.height = 128;
+      const context = canvas.getContext('2d');
+      const colors = ['#ff679a', '#63c7c7', '#76b776'];
+      let colorIndex = 0;
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 1.0 });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(150, 40, 1);
+
+      function updateText() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#ffffff00';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = colors[colorIndex];
+        context.lineWidth = 1;
+        context.strokeStyle = '#ff8690';
+        context.font = '48px MyFont';
+        context.fillText(text, size / 2, 64);
+        context.strokeText(text, size / 2, 64);
+        texture.needsUpdate = true;
+      }
+
+      updateText();
+      setInterval(() => {
+        colorIndex = (colorIndex + 1) % colors.length;
+        updateText();
+      }, 10000);
+
+      return sprite;
+    }
+
+    const planes = [];
+    const labels = [];
+    const imagePositions = [];
+    const textPositions = [];
+    const boxCount = 30;
+    const radiusImage = 300;
+    const radiusText = 350;
+
+    function initScene() {
+      group.clear();
+      planes.length = 0;
+      labels.length = 0;
+      imagePositions.length = 0;
+      textPositions.length = 0;
+
+      if (images.length === 0 || textLines.length === 0) return;
+
+      for (let i = 0; i < boxCount; i++) {
+        const size = 20 + Math.random() * 10;
+        const texture = textureLoader.load(images[i % images.length]);
+
+        // Cải thiện chất lượng texture
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.generateMipmaps = false;
+        texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        texture.colorSpace = THREE.SRGBColorSpace;
+
+        // Tạo geometry với tỉ lệ 1:1 (vuông)
+        const geometry = new THREE.PlaneGeometry(size, size);
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: false,
+          side: THREE.DoubleSide,
+          toneMapped: false
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // Điều chỉnh scale để giữ tỉ lệ ảnh và làm ảnh rõ nét hơn
+        texture.addEventListener('load', function () {
+          const aspectRatio = texture.image.width / texture.image.height;
+          if (aspectRatio > 1) {
+            // Ảnh ngang
+            mesh.scale.set(0.15 * aspectRatio, 0.15, 0.15);
+          } else {
+            // Ảnh dọc
+            mesh.scale.set(0.15, 0.15 / aspectRatio, 0.15);
+          }
+          // Đảm bảo texture được cập nhật
+          texture.needsUpdate = true;
+        });
+
+        const pos = randomPosOnSphere(radiusImage);
+        imagePositions.push(pos);
+        mesh.position.set(0, 0, 0);
+        mesh.scale.set(0.1, 0.1, 0.1); // Scale mặc định lớn hơn
+        mesh.userData = { progress: 0, speed: 0.0005 + Math.random() * 0.0005, delayOffset: i * 0.02 };
+        group.add(mesh);
+        planes.push(mesh);
+      }
+
+      for (let i = 0; i < boxCount * 2; i++) {
+        const text = textLines[i % textLines.length];
+        const sprite = createTextSprite(text);
+        const pos = randomPosOnSphere(radiusText);
+        textPositions.push(pos);
+        sprite.position.set(0, 0, 0);
+        sprite.scale.set(1.5, 0.4, 1);
+        sprite.userData = { progress: 0, speed: 0.0005 + Math.random() * 0.0005, delayOffset: i * 0.02 };
+        scene.add(sprite);
+        labels.push(sprite);
+      }
+    }
+
+    function updateLabelText(index, text) {
+      if (index < 0 || index >= labels.length) return;
+      const label = labels[index];
+      if (label) {
+        scene.remove(label);
+        label.material.map.dispose();
+        label.material.dispose();
+      }
+      if (text.trim() === '') {
+        labels[index] = null;
+        return;
+      }
+      const newSprite = createTextSprite(text);
+      newSprite.position.copy(textPositions[index]);
+      scene.add(newSprite);
+      labels[index] = newSprite;
+    }
+
+    let targetRotX = 0;
+    let targetRotY = 0;
+    let currentRotX = 0;
+    let currentRotY = 0;
+    const maxRotX = Math.PI / 6;
+    const maxRotY = Math.PI / 4;
+
+    function updateTargetRotation(x, y) {
+      const normalizedX = x / window.innerWidth * 2 - 1;
+      const normalizedY = y / window.innerHeight * 2 - 1;
+      targetRotY = normalizedX * maxRotY;
+      targetRotX = normalizedY * maxRotX;
+    }
+
+    window.addEventListener('mousemove', event => {
+      updateTargetRotation(event.clientX, event.clientY);
+    });
+
+    window.addEventListener('touchmove', event => {
+      if (event.touches.length > 0) {
+        const touch = event.touches[0];
+        updateTargetRotation(touch.clientX, touch.clientY);
+      }
+    }, { passive: true });
+
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      currentRotX += (targetRotX - currentRotX) * 0.05;
+      currentRotY += (targetRotY - currentRotY) * 0.05;
+
+      const distance = 400;
+      camera.position.x = distance * Math.sin(currentRotY) * Math.cos(currentRotX);
+      camera.position.y = distance * Math.sin(currentRotX);
+      camera.position.z = distance * Math.cos(currentRotY) * Math.cos(currentRotX);
+      camera.lookAt(0, 0, 0);
+
+      const lerpToTarget = (target, start) => new THREE.Vector3(target.x, target.y + 1000, target.z);
+
+      planes.forEach((plane, index) => {
+        let progress = plane.userData.progress - plane.userData.delayOffset;
+        if (progress < 0) progress = 0;
+        else if (progress > 1) progress = 1;
+
+        const target = lerpToTarget(imagePositions[index]);
+        plane.position.lerpVectors(target, imagePositions[index], progress);
+
+        let scale = 0.15 + progress * (4 - 0.15);
+        plane.scale.set(scale, scale, scale);
+
+        plane.userData.progress += plane.userData.speed;
+        if (plane.userData.progress > 1 + plane.userData.delayOffset) {
+          plane.userData.progress = 0;
+        }
+
+        const label1 = labels[2 * index];
+        if (label1) {
+          label1.visible = progress > 0;
+          const target1 = lerpToTarget(textPositions[2 * index]);
+          label1.position.lerpVectors(target1, textPositions[2 * index], progress);
+        }
+
+        const label2 = labels[2 * index + 1];
+        if (label2) {
+          label2.visible = progress > 0;
+          const target2 = lerpToTarget(textPositions[2 * index + 1]);
+          label2.position.lerpVectors(target2, textPositions[2 * index + 1], progress);
+        }
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    // Khởi tạo scene và bắt đầu animation ngay khi load trang
+    window.addEventListener('load', () => {
+      initAudio();
+      initScene();
+      for (let i = 0; i < planes.length; i++) {
+        let text = '';
+        if (textLines.length > 0) {
+          text = textLines[i % textLines.length];
+        }
+        updateLabelText(i, text);
+      }
+
+      // Thêm event listener cho nút play
+      document.getElementById('musicButton').addEventListener('click', toggleMusic);
+      
+      // Thêm event listeners để phát nhạc khi người dùng tương tác
+      let hasInteracted = false;
+      
+      // Event listener cho click chuột
+      document.addEventListener('click', () => {
+        if (!hasInteracted) {
+          hasInteracted = true;
+          playMusicOnInteraction();
+        }
+      }, { once: true });
+      
+      // Event listener cho touch (mobile)
+      document.addEventListener('touchstart', () => {
+        if (!hasInteracted) {
+          hasInteracted = true;
+          playMusicOnInteraction();
+        }
+      }, { once: true });
+      
+      // Event listener cho keydown (bàn phím)
+      document.addEventListener('keydown', () => {
+        if (!hasInteracted) {
+          hasInteracted = true;
+          playMusicOnInteraction();
+        }
+      }, { once: true });
+    });
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+
+</html>

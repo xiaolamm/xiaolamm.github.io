@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lovely</title>
+  <link rel="icon" type="image/png" href="i.ico" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ---- CÀI ĐẶT CHUNG & NỀN ---- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+      /* Giữ nguyên để tránh thanh cuộn */
+    }
+
+    #container {
+      width: 100vw;
+      height: 100vh;
+      /* Làm nền tối hơn và chuyển màu mượt hơn */
+      background: radial-gradient(circle at center, #0a0a1f 0%, #000000 100%);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 11;
+    }
+
+    /* ---- MÀN HÌNH CẢNH BÁO XOAY NGANG ---- */
+    #landscape-warning {
+      position: fixed;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      /* Nền vũ trụ sâu thẳm, màu xanh tím */
+      background: radial-gradient(ellipse at center, #1c1856 0%, #0c0a1f 100%);
+      color: #e0eaff;
+      /* Màu chữ chung */
+      display: none;
+      /* Ẩn ban đầu, JS sẽ điều khiển */
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    /* Kích hoạt hiển thị cảnh báo */
+    body.portrait #landscape-warning {
+      display: flex;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Nội dung cảnh báo - Nâng cấp lớn ở đây! */
+    #landscape-warning .warning-content {
+      position: relative;
+      z-index: 2;
+      padding: 2rem 2.5rem;
+      border-radius: 20px;
+      /* Nền thủy tinh mờ, có chiều sâu */
+      background: rgba(33, 26, 134, 0.6);
+      backdrop-filter: blur(10px);
+      /* Hiệu ứng kính mờ */
+      /* Đường viền phát sáng mềm mại */
+      border: 1.5px solid rgba(173, 216, 230, 0.3);
+      /* Lightblue mờ */
+      /* Đổ bóng đa lớp để tạo hiệu ứng "hào quang" */
+      box-shadow:
+        0 0 40px rgba(78, 88, 216, 0.5),
+        /* Bóng tím xanh lan tỏa */
+        0 0 15px rgba(255, 255, 255, 0.1),
+        /* Bóng trắng nhẹ bên trong */
+        inset 0 0 8px rgba(173, 216, 230, 0.2);
+      /* Viền sáng bên trong */
+      transform: scale(0.95);
+      opacity: 0;
+      animation: fadeInContent 0.6s 0.2s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+    }
+
+    @keyframes fadeInContent {
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    #landscape-warning h1 {
+      font-family: 'Orbitron', 'Montserrat', sans-serif;
+      /* Giữ font Orbitron */
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: 1.5px;
+      color: #ffffff;
+      /* Thêm hiệu ứng text-shadow phát sáng */
+      text-shadow: 0 0 12px rgba(230, 230, 255, 0.8), 0 0 4px rgba(255, 255, 255, 1);
+    }
+
+    #landscape-warning h1:nth-of-type(2) {
+      font-size: 1.5rem;
+      /* Giảm kích thước "Tinh Cầu" */
+      margin-bottom: 1.5rem;
+      opacity: 0.8;
+    }
+
+    #landscape-warning p {
+      font-size: 1.1rem;
+      color: #c0c8ff;
+      /* Màu chữ dịu hơn */
+      line-height: 1.5;
+      text-shadow: 0 0 6px rgba(192, 200, 255, 0.7);
+    }
+
+    #landscape-warning p:last-of-type {
+      margin-top: 1rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    /* Nền sao động */
+    #landscape-warning .stars-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: transparent;
+      overflow: hidden;
+      /* Đảm bảo sao không tràn ra ngoài */
+    }
+
+    #landscape-warning .stars-bg::before,
+    #landscape-warning .stars-bg::after {
+      content: '';
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      /* Các hạt sao nhỏ, mịn hơn */
+      background-image:
+        radial-gradient(circle, #fff 1px, transparent 1px),
+        radial-gradient(circle, #c0c8ff 1px, transparent 1px),
+        radial-gradient(circle, #fff 0.5px, transparent 0.5px);
+      background-size: 100px 100px, 150px 150px, 60px 60px;
+      background-position: 0 0, 50px 50px, 30px 30px;
+      opacity: 0;
+      animation: stars-move 30s linear infinite, fadeInStars 1s ease-out forwards;
+    }
+
+    #landscape-warning .stars-bg::after {
+      background-size: 150px 150px, 80px 80px, 120px 120px;
+      background-position: 75px 75px, 40px 40px, 10px 10px;
+      animation-duration: 45s;
+    }
+
+    @keyframes fadeInStars {
+      to {
+        opacity: 0.6;
+      }
+    }
+
+    @keyframes stars-move {
+      from {
+        transform: translateY(0);
+      }
+
+      to {
+        transform: translateY(-50%);
+      }
+
+      /* Chuyển động theo chiều dọc */
+    }
+
+    /* ---- HIỆU ỨNG BLUR VÀ OVERLAY ---- */
+    #dark-overlay {
+      position: fixed;
+      z-index: 5;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      /* Lớp phủ tối hơn để tạo tương phản */
+      background: rgba(0, 0, 5, 0.95);
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.8s ease-in-out;
+    }
+
+    body.intro-started #dark-overlay {
+      opacity: 0;
+      transition-duration: 1.5s;
+    }
+
+    body.portrait #dark-overlay {
+      display: none !important;
+    }
+
+    /* Hiệu ứng làm mờ canvas nền */
+    body.portrait #container canvas {
+      filter: blur(10px) brightness(0.6);
+      opacity: 0.4;
+      transition: filter 0.8s ease-out, opacity 0.8s ease-out;
+    }
+
+    body:not(.portrait) #container canvas {
+      filter: blur(0) brightness(1);
+      opacity: 1;
+      transition: filter 1.2s ease-in, opacity 1.2s ease-in;
+    }
+
+    /* ---- ICON XOAY ĐIỆN THOẠI ---- */
+    .rotate-icon {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 1.2rem auto;
+      /* Cập nhật màu sắc cho icon để đồng bộ */
+      background: url('data:image/svg+xml;utf8,<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="12" y="16" width="32" height="24" rx="6" fill="%23fff" stroke="%23c0c8ff" stroke-width="2"/><path d="M28 8v4" stroke="%23c0c8ff" stroke-width="2" stroke-linecap="round"/><path d="M28 44v4" stroke="%23c0c8ff" stroke-width="2" stroke-linecap="round"/><path d="M8 28h4" stroke="%23c0c8ff" stroke-width="2" stroke-linecap="round"/><path d="M44 28h4" stroke="%23c0c8ff" stroke-width="2" stroke-linecap="round"/><path d="M18 38l-4 4" stroke="%23a985d4" stroke-width="2" stroke-linecap="round"/><path d="M38 38l4 4" stroke="%23a985d4" stroke-width="2" stroke-linecap="round"/><path d="M18 18l-4-4" stroke="%23a985d4" stroke-width="2" stroke-linecap="round"/><path d="M38 18l4-4" stroke="%23a985d4" stroke-width="2" stroke-linecap="round"/></svg>') center/contain no-repeat;
+      animation: rotate-phone 1.8s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    @keyframes rotate-phone {
+      0% {
+        transform: rotate(0deg) scale(1);
+      }
+
+      25% {
+        transform: rotate(-25deg) scale(1.1);
+      }
+
+      50% {
+        transform: rotate(0deg) scale(1);
+      }
+
+      75% {
+        transform: rotate(25deg) scale(1.1);
+      }
+
+      100% {
+        transform: rotate(0deg) scale(1);
+      }
+    }
+
+    .text-white {
+      color: white !important;
+    }
+
+    .btn-audio-toggle {
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .music-status {
+      display: flex;
+      position: fixed;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      z-index: 9999;
+      align-items: center;
+      font-family: sans-serif;
+      font-size: 14px;
+    }
+
+    .music-status .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #a259f7;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #audio-icon {
+      font-size: 20px;
+    }
+
+    body.portrait-mode #landscape-warning {
+      display: flex;
+      opacity: 1;
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+        "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js",
+        "three/examples/jsm/loaders/FontLoader.js": "https://unpkg.com/three@0.152.2/examples/jsm/loaders/FontLoader.js",
+        "three/examples/jsm/geometries/TextGeometry.js": "https://unpkg.com/three@0.152.2/examples/jsm/geometries/TextGeometry.js"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div id="container">
+
+    <button id="toggle-audio" class="text-white btn-audio-toggle"
+      style="position: absolute; top: 10px; right: 10px; z-index: 999;">
+      <i id="audio-icon" class="fa-solid fa-volume-xmark"></i>
+    </button>
+
+    <div id="landscape-warning">
+      <div class="warning-content">
+        <div class="rotate-icon"></div>
+        <p style="font-size: 0.6em;">Cậu hãy xoay ngang màn hình nha!</p>
+        <p style="font-size: 0.6em;">Nhớ chạm vào tinh cầu ở giữa để mở quà bí mật nha.</p>
+        <div class="stars-bg"></div>
+      </div>
+    </div>
+
+    <div id="dark-overlay"></div>
+    <div id="info"></div>
+
+  </div>
+  <script>
+    window.dataLove2Loveloom = {
+      template: "galaxy",
+      data: {
+        keychain: { name: "Loveloom", phone: "Loveloom", address: "Loveloom" },
+        ringTexts: ["My love"],
+      }
+    };
+  </script>
+
+  <script type="module">
+    const _0x227757 = _0x2796;
+    (function (_0x47eb10, _0xd09056) {
+      const _0x3ca998 = _0x2796,
+        _0x1893ed = _0x47eb10();
+      while (!![]) {
+        try {
+          const _0x44781e =
+            parseInt(_0x3ca998(0x17f)) / 0x1 +
+            -parseInt(_0x3ca998(0x17b)) / 0x2 +
+            (-parseInt(_0x3ca998(0x168)) / 0x3) *
+            (-parseInt(_0x3ca998(0x22d)) / 0x4) +
+            parseInt(_0x3ca998(0x1b2)) / 0x5 +
+            (parseInt(_0x3ca998(0x1e2)) / 0x6) *
+            (-parseInt(_0x3ca998(0x195)) / 0x7) +
+            (-parseInt(_0x3ca998(0x1ab)) / 0x8) *
+            (parseInt(_0x3ca998(0x1ad)) / 0x9) +
+            parseInt(_0x3ca998(0x20d)) / 0xa;
+          if (_0x44781e === _0xd09056) break;
+          else _0x1893ed["push"](_0x1893ed["shift"]());
+        } catch (_0x5374ec) {
+          _0x1893ed["push"](_0x1893ed["shift"]());
+        }
+      }
+    })(_0x450c, 0x478f5);
+    import * as _0x51308b from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+    import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+    const scene = new _0x51308b["Scene"]();
+    scene[_0x227757(0x225)] = new _0x51308b[_0x227757(0x208)](0x0, 0.0015);
+    const camera = new _0x51308b[_0x227757(0x20e)](
+      0x4b,
+      window[_0x227757(0x1d3)] / window[_0x227757(0x241)],
+      0.1,
+      0x186a0
+    );
+    camera[_0x227757(0x24b)][_0x227757(0x23b)](0x0, 0x14, 0x1e);
+    const renderer = new _0x51308b[_0x227757(0x1a0)]({ antialias: !![] });
+    renderer[_0x227757(0x1ba)](window[_0x227757(0x1d3)], window[_0x227757(0x241)]),
+      renderer[_0x227757(0x22c)](Math["min"](window[_0x227757(0x1cd)], 0x2)),
+      (renderer["outputColorSpace"] = _0x51308b["SRGBColorSpace"]),
+      document[_0x227757(0x18c)](_0x227757(0x23a))[_0x227757(0x1f6)](
+        renderer[_0x227757(0x236)]
+      );
+    const controls = new OrbitControls(camera, renderer[_0x227757(0x236)]);
+    (controls[_0x227757(0x21c)] = !![]),
+      (controls["autoRotate"] = !![]),
+      (controls[_0x227757(0x174)] = 0.2),
+      (controls[_0x227757(0x202)] = ![]),
+      controls[_0x227757(0x269)][_0x227757(0x23b)](0x0, 0x0, 0x0),
+      (controls[_0x227757(0x18a)] = ![]),
+      (controls[_0x227757(0x226)] = 0xf),
+      (controls[_0x227757(0x1c0)] = 0x12c),
+      (controls[_0x227757(0x230)] = 0.3),
+      (controls[_0x227757(0x243)] = 0.3),
+      controls[_0x227757(0x242)]();
+    function createGlowMaterial(_0x21a539, _0x422da8 = 0x80, _0x48f2a9 = 0.55) {
+      const _0x2b3fa0 = _0x227757,
+        _0x60f1a5 = document[_0x2b3fa0(0x20c)](_0x2b3fa0(0x1bb));
+      _0x60f1a5[_0x2b3fa0(0x16c)] = _0x60f1a5[_0x2b3fa0(0x237)] = _0x422da8;
+      const _0x460971 = _0x60f1a5[_0x2b3fa0(0x245)]("2d"),
+        _0x48130c = _0x460971[_0x2b3fa0(0x1a6)](
+          _0x422da8 / 0x2,
+          _0x422da8 / 0x2,
+          0x0,
+          _0x422da8 / 0x2,
+          _0x422da8 / 0x2,
+          _0x422da8 / 0x2
+        );
+      _0x48130c[_0x2b3fa0(0x232)](0x0, _0x21a539),
+        _0x48130c[_0x2b3fa0(0x232)](0x1, "rgba(0,0,0,0)"),
+        (_0x460971["fillStyle"] = _0x48130c),
+        _0x460971[_0x2b3fa0(0x185)](0x0, 0x0, _0x422da8, _0x422da8);
+      const _0x319568 = new _0x51308b["CanvasTexture"](_0x60f1a5),
+        _0x160767 = new _0x51308b[_0x2b3fa0(0x178)]({
+          map: _0x319568,
+          transparent: !![],
+          opacity: _0x48f2a9,
+          depthWrite: ![],
+          blending: _0x51308b["AdditiveBlending"],
+        });
+      return new _0x51308b[_0x2b3fa0(0x1ea)](_0x160767);
+    }
+    const centralGlow = createGlowMaterial(_0x227757(0x1cf), 0x9c, 0.25);
+    centralGlow[_0x227757(0x1a5)][_0x227757(0x23b)](0x8, 0x8, 0x1),
+      scene[_0x227757(0x227)](centralGlow);
+    for (let i = 0x0; i < 0xf; i++) {
+      const hue = Math[_0x227757(0x189)]() * 0x168,
+        color = _0x227757(0x1b6) + hue + _0x227757(0x1b8),
+        nebula = createGlowMaterial(color, 0x100);
+      nebula["scale"][_0x227757(0x23b)](0x64, 0x64, 0x1),
+        nebula[_0x227757(0x24b)][_0x227757(0x23b)](
+          (Math[_0x227757(0x189)]() - 0.5) * 0xaf,
+          (Math["random"]() - 0.5) * 0xaf,
+          (Math["random"]() - 0.5) * 0xaf
+        ),
+        scene[_0x227757(0x227)](nebula);
+    }
+    const galaxyParameters = {
+      count: 100000,
+      arms: 6,
+      radius: 100,
+      spin: 0.5,
+      randomness: 0.2,
+      randomnessPower: 20,
+      insideColor: new _0x51308b[_0x227757(0x215)](0xd63ed6),
+      outsideColor: new _0x51308b[_0x227757(0x215)](0x48b8b8),
+    },
+      heartImages = [
+        ...(window.dataLove2Loveloom &&
+          window.dataLove2Loveloom.data.heartImages
+          ? window.dataLove2Loveloom.data.heartImages
+          : []),
+        "./image/i1.jpg",
+        "./image/i2.jpeg",
+        "./image/i3.jpeg",
+        "./image/i4.jpeg",
+        "./image/i5.jpeg",
+        "./image/i6.jpeg",
+      ],
+      textureLoader = new _0x51308b[_0x227757(0x1c4)](),
+      numGroups = heartImages.length,
+      maxDensity = 15000,
+      minDensity = 4000,
+      maxGroupsForScale = 6;
+    let pointsPerGroup;
+    if (numGroups <= 0x1) pointsPerGroup = maxDensity;
+    else {
+      if (numGroups >= maxGroupsForScale) pointsPerGroup = minDensity;
+      else {
+        const t = (numGroups - 0x1) / (maxGroupsForScale - 0x1);
+        pointsPerGroup = Math[_0x227757(0x187)](
+          maxDensity * (0x1 - t) + minDensity * t
+        );
+      }
+    }
+    pointsPerGroup * numGroups > galaxyParameters[_0x227757(0x170)] &&
+      (pointsPerGroup = Math[_0x227757(0x187)](
+        galaxyParameters["count"] / numGroups
+      ));
+    console[_0x227757(0x1f8)](
+      _0x227757(0x26e) + numGroups + _0x227757(0x218) + pointsPerGroup
+    );
+    const positions = new Float32Array(galaxyParameters[_0x227757(0x170)] * 0x3),
+      colors = new Float32Array(galaxyParameters["count"] * 0x3);
+    let pointIdx = 0x0;
+    for (let i = 0x0; i < galaxyParameters["count"]; i++) {
+      const radius =
+        Math[_0x227757(0x257)](
+          Math[_0x227757(0x189)](),
+          galaxyParameters["randomnessPower"]
+        ) * galaxyParameters[_0x227757(0x1c1)],
+        branchAngle =
+          ((i % galaxyParameters[_0x227757(0x1a4)]) /
+            galaxyParameters[_0x227757(0x1a4)]) *
+          Math["PI"] *
+          0x2,
+        spinAngle = radius * galaxyParameters[_0x227757(0x16d)],
+        randomX =
+          (Math[_0x227757(0x189)]() - 0.5) *
+          galaxyParameters[_0x227757(0x1bf)] *
+          radius,
+        randomY =
+          (Math[_0x227757(0x189)]() - 0.5) *
+          galaxyParameters[_0x227757(0x1bf)] *
+          radius *
+          0.5,
+        randomZ =
+          (Math["random"]() - 0.5) * galaxyParameters[_0x227757(0x1bf)] * radius,
+        totalAngle = branchAngle + spinAngle;
+      if (radius < 0x1e && Math[_0x227757(0x189)]() < 0.7) continue;
+      const i3 = pointIdx * 0x3;
+      (positions[i3] = Math[_0x227757(0x166)](totalAngle) * radius + randomX),
+        (positions[i3 + 0x1] = randomY),
+        (positions[i3 + 0x2] =
+          Math[_0x227757(0x176)](totalAngle) * radius + randomZ);
+      const mixedColor = new _0x51308b["Color"](0xff66ff);
+      mixedColor[_0x227757(0x203)](
+        new _0x51308b[_0x227757(0x215)](0x66ffff),
+        radius / galaxyParameters[_0x227757(0x1c1)]
+      ),
+        mixedColor[_0x227757(0x1aa)](0.7 + 0.3 * Math[_0x227757(0x189)]()),
+        (colors[i3] = mixedColor["r"]),
+        (colors[i3 + 0x1] = mixedColor["g"]),
+        (colors[i3 + 0x2] = mixedColor["b"]),
+        pointIdx++;
+    }
+    const galaxyGeometry = new _0x51308b[_0x227757(0x26d)]();
+    galaxyGeometry[_0x227757(0x1cb)](
+      _0x227757(0x24b),
+      new _0x51308b["BufferAttribute"](
+        positions[_0x227757(0x19b)](0x0, pointIdx * 0x3),
+        0x3
+      )
+    ),
+      galaxyGeometry["setAttribute"](
+        _0x227757(0x20f),
+        new _0x51308b[_0x227757(0x1ee)](
+          colors[_0x227757(0x19b)](0x0, pointIdx * 0x3),
+          0x3
+        )
+      );
+    const galaxyMaterial = new _0x51308b["ShaderMaterial"]({
+      uniforms: {
+        uTime: { value: 0x0 },
+        uSize: { value: 0x32 * renderer["getPixelRatio"]() },
+        uRippleTime: { value: -0x1 },
+        uRippleSpeed: { value: 0x28 },
+        uRippleWidth: { value: 0x14 },
+      },
+      vertexShader: _0x227757(0x271),
+      fragmentShader: _0x227757(0x220),
+      blending: _0x51308b[_0x227757(0x263)],
+      depthWrite: ![],
+      transparent: !![],
+      vertexColors: !![],
+    }),
+      galaxy = new _0x51308b[_0x227757(0x25c)](galaxyGeometry, galaxyMaterial);
+    scene[_0x227757(0x227)](galaxy);
+    function createNeonTexture(_0x7fac77, _0x467745) {
+      const _0x50415a = _0x227757,
+        _0x4a0a46 = window[_0x50415a(0x1cd)] || 0x1,
+        _0x316b3e = document["createElement"](_0x50415a(0x1bb));
+      (_0x316b3e[_0x50415a(0x16c)] = _0x316b3e[_0x50415a(0x237)] =
+        _0x467745 * _0x4a0a46),
+        (_0x316b3e[_0x50415a(0x1df)][_0x50415a(0x16c)] = _0x316b3e["style"][
+          "height"
+        ] =
+          _0x467745 + "px");
+      const _0x2834f7 = _0x316b3e["getContext"]("2d");
+      _0x2834f7[_0x50415a(0x1a5)](_0x4a0a46, _0x4a0a46);
+      const _0x148718 = _0x7fac77[_0x50415a(0x16c)] / _0x7fac77["height"];
+      let _0x13e85f, _0x3058f4, _0x5ae339, _0x4e76b8;
+      _0x148718 > 0x1
+        ? ((_0x13e85f = _0x467745),
+          (_0x3058f4 = _0x467745 / _0x148718),
+          (_0x5ae339 = 0x0),
+          (_0x4e76b8 = (_0x467745 - _0x3058f4) / 0x2))
+        : ((_0x3058f4 = _0x467745),
+          (_0x13e85f = _0x467745 * _0x148718),
+          (_0x5ae339 = (_0x467745 - _0x13e85f) / 0x2),
+          (_0x4e76b8 = 0x0));
+      _0x2834f7[_0x50415a(0x21f)](0x0, 0x0, _0x467745, _0x467745);
+      const _0x5791fc = _0x467745 * 0.1;
+      _0x2834f7["save"](),
+        _0x2834f7[_0x50415a(0x1c8)](),
+        _0x2834f7[_0x50415a(0x25a)](_0x5ae339 + _0x5791fc, _0x4e76b8),
+        _0x2834f7[_0x50415a(0x217)](_0x5ae339 + _0x13e85f - _0x5791fc, _0x4e76b8),
+        _0x2834f7[_0x50415a(0x18f)](
+          _0x5ae339 + _0x13e85f,
+          _0x4e76b8,
+          _0x5ae339 + _0x13e85f,
+          _0x4e76b8 + _0x5791fc,
+          _0x5791fc
+        ),
+        _0x2834f7["lineTo"](
+          _0x5ae339 + _0x13e85f,
+          _0x4e76b8 + _0x3058f4 - _0x5791fc
+        ),
+        _0x2834f7[_0x50415a(0x18f)](
+          _0x5ae339 + _0x13e85f,
+          _0x4e76b8 + _0x3058f4,
+          _0x5ae339 + _0x13e85f - _0x5791fc,
+          _0x4e76b8 + _0x3058f4,
+          _0x5791fc
+        ),
+        _0x2834f7[_0x50415a(0x217)](_0x5ae339 + _0x5791fc, _0x4e76b8 + _0x3058f4),
+        _0x2834f7["arcTo"](
+          _0x5ae339,
+          _0x4e76b8 + _0x3058f4,
+          _0x5ae339,
+          _0x4e76b8 + _0x3058f4 - _0x5791fc,
+          _0x5791fc
+        ),
+        _0x2834f7[_0x50415a(0x217)](_0x5ae339, _0x4e76b8 + _0x5791fc),
+        _0x2834f7[_0x50415a(0x18f)](
+          _0x5ae339,
+          _0x4e76b8,
+          _0x5ae339 + _0x5791fc,
+          _0x4e76b8,
+          _0x5791fc
+        ),
+        _0x2834f7[_0x50415a(0x1d5)](),
+        _0x2834f7[_0x50415a(0x18b)](),
+        _0x2834f7["drawImage"](
+          _0x7fac77,
+          _0x5ae339,
+          _0x4e76b8,
+          _0x13e85f,
+          _0x3058f4
+        ),
+        _0x2834f7[_0x50415a(0x250)]();
+      const _0x1eb20c = new _0x51308b[_0x50415a(0x21e)](_0x316b3e);
+      return (
+        (_0x1eb20c["minFilter"] = _0x51308b["LinearFilter"]),
+        (_0x1eb20c[_0x50415a(0x255)] = _0x51308b["LinearFilter"]),
+        (_0x1eb20c[_0x50415a(0x1bc)] =
+          renderer[_0x50415a(0x1c5)][_0x50415a(0x175)]()),
+        (_0x1eb20c["colorSpace"] = _0x51308b[_0x50415a(0x183)]),
+        _0x1eb20c
+      );
+    }
+    for (let group = 0x0; group < numGroups; group++) {
+      const groupPositions = new Float32Array(pointsPerGroup * 0x3),
+        groupColorsNear = new Float32Array(pointsPerGroup * 0x3),
+        groupColorsFar = new Float32Array(pointsPerGroup * 0x3);
+      let validPointCount = 0x0;
+      for (let i = 0x0; i < pointsPerGroup; i++) {
+        const idx = validPointCount * 0x3,
+          globalIdx = group * pointsPerGroup + i,
+          radius =
+            Math[_0x227757(0x257)](
+              Math[_0x227757(0x189)](),
+              galaxyParameters[_0x227757(0x22b)]
+            ) * galaxyParameters[_0x227757(0x1c1)];
+        if (radius < 0x1e) continue;
+        const branchAngle =
+          ((globalIdx % galaxyParameters["arms"]) /
+            galaxyParameters[_0x227757(0x1a4)]) *
+          Math["PI"] *
+          0x2,
+          spinAngle = radius * galaxyParameters["spin"],
+          randomX =
+            (Math[_0x227757(0x189)]() - 0.5) *
+            galaxyParameters[_0x227757(0x1bf)] *
+            radius,
+          randomY =
+            (Math[_0x227757(0x189)]() - 0.5) *
+            galaxyParameters[_0x227757(0x1bf)] *
+            radius *
+            0.5,
+          randomZ =
+            (Math[_0x227757(0x189)]() - 0.5) *
+            galaxyParameters[_0x227757(0x1bf)] *
+            radius,
+          totalAngle = branchAngle + spinAngle;
+        (groupPositions[idx] =
+          Math[_0x227757(0x166)](totalAngle) * radius + randomX),
+          (groupPositions[idx + 0x1] = randomY),
+          (groupPositions[idx + 0x2] = Math["sin"](totalAngle) * radius + randomZ);
+        const colorNear = new _0x51308b[_0x227757(0x215)](0xffffff);
+        (groupColorsNear[idx] = colorNear["r"]),
+          (groupColorsNear[idx + 0x1] = colorNear["g"]),
+          (groupColorsNear[idx + 0x2] = colorNear["b"]);
+        const colorFar = galaxyParameters[_0x227757(0x1e4)][_0x227757(0x172)]();
+        colorFar[_0x227757(0x203)](
+          galaxyParameters[_0x227757(0x23f)],
+          radius / galaxyParameters[_0x227757(0x1c1)]
+        ),
+          colorFar[_0x227757(0x1aa)](0.7 + 0.3 * Math[_0x227757(0x189)]()),
+          (groupColorsFar[idx] = colorFar["r"]),
+          (groupColorsFar[idx + 0x1] = colorFar["g"]),
+          (groupColorsFar[idx + 0x2] = colorFar["b"]),
+          validPointCount++;
+      }
+      if (validPointCount === 0x0) continue;
+      const groupGeometryNear = new _0x51308b["BufferGeometry"]();
+      groupGeometryNear[_0x227757(0x1cb)](
+        _0x227757(0x24b),
+        new _0x51308b[_0x227757(0x1ee)](
+          groupPositions[_0x227757(0x19b)](0x0, validPointCount * 0x3),
+          0x3
+        )
+      ),
+        groupGeometryNear[_0x227757(0x1cb)](
+          _0x227757(0x20f),
+          new _0x51308b[_0x227757(0x1ee)](
+            groupColorsNear[_0x227757(0x19b)](0x0, validPointCount * 0x3),
+            0x3
+          )
+        );
+      const groupGeometryFar = new _0x51308b[_0x227757(0x26d)]();
+      groupGeometryFar[_0x227757(0x1cb)](
+        _0x227757(0x24b),
+        new _0x51308b[_0x227757(0x1ee)](
+          groupPositions[_0x227757(0x19b)](0x0, validPointCount * 0x3),
+          0x3
+        )
+      ),
+        groupGeometryFar[_0x227757(0x1cb)](
+          _0x227757(0x20f),
+          new _0x51308b[_0x227757(0x1ee)](
+            groupColorsFar[_0x227757(0x19b)](0x0, validPointCount * 0x3),
+            0x3
+          )
+        );
+      const posAttr = groupGeometryFar[_0x227757(0x177)](_0x227757(0x24b));
+      let cx = 0x0,
+        cy = 0x0,
+        cz = 0x0;
+      for (let i = 0x0; i < posAttr[_0x227757(0x170)]; i++) {
+        (cx += posAttr[_0x227757(0x1dd)](i)),
+          (cy += posAttr[_0x227757(0x1da)](i)),
+          (cz += posAttr[_0x227757(0x193)](i));
+      }
+      (cx /= posAttr[_0x227757(0x170)]),
+        (cy /= posAttr[_0x227757(0x170)]),
+        (cz /= posAttr[_0x227757(0x170)]),
+        groupGeometryNear[_0x227757(0x199)](-cx, -cy, -cz),
+        groupGeometryFar["translate"](-cx, -cy, -cz);
+      const img = new window[_0x227757(0x173)]();
+      (img["crossOrigin"] = _0x227757(0x24a)),
+        (img["src"] = heartImages[group]),
+        (img["onload"] = () => {
+          const _0x1dd5b1 = _0x227757,
+            _0xcbd4e6 = createNeonTexture(img, 0x100),
+            _0x342790 = new _0x51308b[_0x1dd5b1(0x1b4)]({
+              size: 1.8,
+              map: _0xcbd4e6,
+              transparent: ![],
+              alphaTest: 0.2,
+              depthWrite: !![],
+              depthTest: !![],
+              blending: _0x51308b[_0x1dd5b1(0x254)],
+              vertexColors: !![],
+            }),
+            _0x224592 = new _0x51308b[_0x1dd5b1(0x1b4)]({
+              size: 1.8,
+              map: _0xcbd4e6,
+              transparent: !![],
+              alphaTest: 0.2,
+              depthWrite: ![],
+              blending: _0x51308b[_0x1dd5b1(0x263)],
+              vertexColors: !![],
+            }),
+            _0x5488d1 = new _0x51308b[_0x1dd5b1(0x25c)](
+              groupGeometryFar,
+              _0x224592
+            );
+          _0x5488d1[_0x1dd5b1(0x24b)][_0x1dd5b1(0x23b)](cx, cy, cz),
+            (_0x5488d1[_0x1dd5b1(0x268)][_0x1dd5b1(0x207)] = _0x342790),
+            (_0x5488d1[_0x1dd5b1(0x268)][_0x1dd5b1(0x238)] = groupGeometryNear),
+            (_0x5488d1[_0x1dd5b1(0x268)][_0x1dd5b1(0x1c7)] = _0x224592),
+            (_0x5488d1[_0x1dd5b1(0x268)]["geometryFar"] = groupGeometryFar),
+            scene[_0x1dd5b1(0x227)](_0x5488d1);
+        });
+    }
+    const ambientLight = new _0x51308b[_0x227757(0x1b1)](0xffffff, 0.2);
+    scene[_0x227757(0x227)](ambientLight);
+    const starCount = 0x4e20,
+      starGeometry = new _0x51308b["BufferGeometry"](),
+      starPositions = new Float32Array(starCount * 0x3);
+    for (let i = 0x0; i < starCount; i++) {
+      (starPositions[i * 0x3] = (Math["random"]() - 0.5) * 0x384),
+        (starPositions[i * 0x3 + 0x1] = (Math["random"]() - 0.5) * 0x384),
+        (starPositions[i * 0x3 + 0x2] = (Math["random"]() - 0.5) * 0x384);
+    }
+    starGeometry[_0x227757(0x1cb)](
+      _0x227757(0x24b),
+      new _0x51308b[_0x227757(0x1ee)](starPositions, 0x3)
+    );
+    const starMaterial = new _0x51308b[_0x227757(0x1b4)]({
+      color: 0xffffff,
+      size: 0.7,
+      transparent: !![],
+      opacity: 0.7,
+      depthWrite: ![],
+    }),
+      starField = new _0x51308b[_0x227757(0x25c)](starGeometry, starMaterial);
+    (starField["name"] = _0x227757(0x1f1)),
+      (starField[_0x227757(0x24c)] = 0x3e7),
+      scene["add"](starField);
+    let shootingStars = [];
+    function createShootingStar() {
+      const _0x13aabb = _0x227757,
+        _0x8880d4 = 0x64,
+        _0xd72591 = new _0x51308b[_0x13aabb(0x169)](0x2, 0x20, 0x20),
+        _0x3ca456 = new _0x51308b[_0x13aabb(0x1d9)]({
+          color: 0xffffff,
+          transparent: !![],
+          opacity: 0x0,
+          blending: _0x51308b[_0x13aabb(0x263)],
+        }),
+        _0x2472cb = new _0x51308b["Mesh"](_0xd72591, _0x3ca456),
+        _0x4e205c = new _0x51308b[_0x13aabb(0x169)](0x3, 0x20, 0x20),
+        _0x39a830 = new _0x51308b["ShaderMaterial"]({
+          uniforms: { time: { value: 0x0 } },
+          vertexShader:
+            "\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20varying\x20vec3\x20vNormal;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20void\x20main()\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vNormal\x20=\x20normalize(normalMatrix\x20*\x20normal);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_Position\x20=\x20projectionMatrix\x20*\x20modelViewMatrix\x20*\x20vec4(position,\x201.0);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20",
+          fragmentShader: _0x13aabb(0x251),
+          transparent: !![],
+          blending: _0x51308b[_0x13aabb(0x263)],
+          side: _0x51308b["BackSide"],
+        }),
+        _0x3b0383 = new _0x51308b[_0x13aabb(0x256)](_0x4e205c, _0x39a830);
+      _0x2472cb[_0x13aabb(0x227)](_0x3b0383);
+      const _0x3fe49c = new _0x51308b[_0x13aabb(0x169)](
+        planetRadius * 1.05,
+        0x30,
+        0x30
+      ),
+        _0x495e3d = new _0x51308b["ShaderMaterial"]({
+          uniforms: {
+            glowColor: { value: new _0x51308b[_0x13aabb(0x215)](0xe0b3ff) },
+          },
+          vertexShader: _0x13aabb(0x23c),
+          fragmentShader: _0x13aabb(0x1be),
+          side: _0x51308b[_0x13aabb(0x247)],
+          blending: _0x51308b[_0x13aabb(0x263)],
+          transparent: !![],
+        }),
+        _0x17541d = new _0x51308b[_0x13aabb(0x256)](_0x3fe49c, _0x495e3d);
+      planet[_0x13aabb(0x227)](_0x17541d);
+      const _0x403d01 = createRandomCurve(),
+        _0x289b6f = [];
+      for (let _0x350616 = 0x0; _0x350616 < _0x8880d4; _0x350616++) {
+        const _0xc67d94 = _0x350616 / (_0x8880d4 - 0x1);
+        _0x289b6f[_0x13aabb(0x248)](_0x403d01[_0x13aabb(0x1cc)](_0xc67d94));
+      }
+      const _0x5aba6e = new _0x51308b[_0x13aabb(0x26d)]()[_0x13aabb(0x181)](
+        _0x289b6f
+      ),
+        _0x1e876d = new _0x51308b["LineBasicMaterial"]({
+          color: 0x99eaff,
+          transparent: !![],
+          opacity: 0.7,
+          linewidth: 0x2,
+        }),
+        _0x117113 = new _0x51308b[_0x13aabb(0x258)](_0x5aba6e, _0x1e876d),
+        _0x10a7a6 = new _0x51308b[_0x13aabb(0x1d0)]();
+      _0x10a7a6["add"](_0x2472cb),
+        _0x10a7a6[_0x13aabb(0x227)](_0x117113),
+        (_0x10a7a6[_0x13aabb(0x268)] = {
+          curve: _0x403d01,
+          progress: 0x0,
+          speed: 0.001 + Math[_0x13aabb(0x189)]() * 0.001,
+          life: 0x0,
+          maxLife: 0x12c,
+          head: _0x2472cb,
+          trail: _0x117113,
+          trailLength: _0x8880d4,
+          trailPoints: _0x289b6f,
+        }),
+        scene[_0x13aabb(0x227)](_0x10a7a6),
+        shootingStars[_0x13aabb(0x248)](_0x10a7a6);
+    }
+    function createRandomCurve() {
+      const _0x1336ca = _0x227757,
+        _0x230b72 = [],
+        _0x1a5407 = new _0x51308b["Vector3"](
+          -0xc8 + Math[_0x1336ca(0x189)]() * 0x64,
+          -0x64 + Math["random"]() * 0xc8,
+          -0x64 + Math[_0x1336ca(0x189)]() * 0xc8
+        ),
+        _0x5d6e68 = new _0x51308b[_0x1336ca(0x167)](
+          0x258 + Math[_0x1336ca(0x189)]() * 0xc8,
+          _0x1a5407["y"] + (-0x64 + Math["random"]() * 0xc8),
+          _0x1a5407["z"] + (-0x64 + Math[_0x1336ca(0x189)]() * 0xc8)
+        ),
+        _0x47d5b7 = new _0x51308b[_0x1336ca(0x167)](
+          _0x1a5407["x"] + 0xc8 + Math["random"]() * 0x64,
+          _0x1a5407["y"] + (-0x32 + Math[_0x1336ca(0x189)]() * 0x64),
+          _0x1a5407["z"] + (-0x32 + Math[_0x1336ca(0x189)]() * 0x64)
+        ),
+        _0x20006b = new _0x51308b[_0x1336ca(0x167)](
+          _0x5d6e68["x"] - 0xc8 + Math[_0x1336ca(0x189)]() * 0x64,
+          _0x5d6e68["y"] + (-0x32 + Math[_0x1336ca(0x189)]() * 0x64),
+          _0x5d6e68["z"] + (-0x32 + Math[_0x1336ca(0x189)]() * 0x64)
+        );
+      return (
+        _0x230b72["push"](_0x1a5407, _0x47d5b7, _0x20006b, _0x5d6e68),
+        new _0x51308b[_0x1336ca(0x1c6)](_0x1a5407, _0x47d5b7, _0x20006b, _0x5d6e68)
+      );
+    }
+    function createPlanetTexture(_0x3b2573 = 0x200) {
+      const _0x5d09fc = _0x227757,
+        _0x4f907b = document[_0x5d09fc(0x20c)]("canvas");
+      _0x4f907b["width"] = _0x4f907b[_0x5d09fc(0x237)] = _0x3b2573;
+      const _0x298704 = _0x4f907b[_0x5d09fc(0x245)]("2d"),
+        _0x292164 = _0x298704[_0x5d09fc(0x1a6)](
+          _0x3b2573 / 0x2,
+          _0x3b2573 / 0x2,
+          _0x3b2573 / 0x8,
+          _0x3b2573 / 0x2,
+          _0x3b2573 / 0x2,
+          _0x3b2573 / 0x2
+        );
+      _0x292164["addColorStop"](0x0, _0x5d09fc(0x228)),
+        _0x292164["addColorStop"](0.12, _0x5d09fc(0x1e6)),
+        _0x292164[_0x5d09fc(0x232)](0.22, _0x5d09fc(0x21b)),
+        _0x292164["addColorStop"](0.35, _0x5d09fc(0x1f9)),
+        _0x292164[_0x5d09fc(0x232)](0.5, _0x5d09fc(0x1e1)),
+        _0x292164[_0x5d09fc(0x232)](0.62, _0x5d09fc(0x1a9)),
+        _0x292164[_0x5d09fc(0x232)](0.75, _0x5d09fc(0x1d7)),
+        _0x292164["addColorStop"](0x1, _0x5d09fc(0x1db)),
+        (_0x298704[_0x5d09fc(0x1e8)] = _0x292164),
+        _0x298704[_0x5d09fc(0x185)](0x0, 0x0, _0x3b2573, _0x3b2573);
+      const _0x4ddb8d = [
+        _0x5d09fc(0x228),
+        "#f8bbd0",
+        _0x5d09fc(0x1e6),
+        "#f48fb1",
+        _0x5d09fc(0x21b),
+        _0x5d09fc(0x21b),
+        _0x5d09fc(0x1f9),
+        _0x5d09fc(0x1e1),
+        _0x5d09fc(0x1a9),
+        _0x5d09fc(0x1d7),
+      ];
+      for (let _0x508fce = 0x0; _0x508fce < 0x28; _0x508fce++) {
+        const _0x2f1d7c = Math[_0x5d09fc(0x189)]() * _0x3b2573,
+          _0x184a68 = Math[_0x5d09fc(0x189)]() * _0x3b2573,
+          _0x44f0fa = 0x1e + Math["random"]() * 0x78,
+          _0x12d6bb =
+            _0x4ddb8d[
+            Math["floor"](Math[_0x5d09fc(0x189)]() * _0x4ddb8d["length"])
+            ],
+          _0x43fa77 = _0x298704["createRadialGradient"](
+            _0x2f1d7c,
+            _0x184a68,
+            0x0,
+            _0x2f1d7c,
+            _0x184a68,
+            _0x44f0fa
+          );
+        _0x43fa77["addColorStop"](0x0, _0x12d6bb + "cc"),
+          _0x43fa77[_0x5d09fc(0x232)](0x1, _0x12d6bb + "00"),
+          (_0x298704[_0x5d09fc(0x1e8)] = _0x43fa77),
+          _0x298704[_0x5d09fc(0x185)](0x0, 0x0, _0x3b2573, _0x3b2573);
+      }
+      for (let _0xe93d60 = 0x0; _0xe93d60 < 0x8; _0xe93d60++) {
+        _0x298704[_0x5d09fc(0x1c8)](),
+          _0x298704[_0x5d09fc(0x25a)](
+            Math[_0x5d09fc(0x189)]() * _0x3b2573,
+            Math[_0x5d09fc(0x189)]() * _0x3b2573
+          ),
+          _0x298704["bezierCurveTo"](
+            Math[_0x5d09fc(0x189)]() * _0x3b2573,
+            Math["random"]() * _0x3b2573,
+            Math[_0x5d09fc(0x189)]() * _0x3b2573,
+            Math["random"]() * _0x3b2573,
+            Math[_0x5d09fc(0x189)]() * _0x3b2573,
+            Math[_0x5d09fc(0x189)]() * _0x3b2573
+          ),
+          (_0x298704[_0x5d09fc(0x1f4)] =
+            "rgba(180,\x20120,\x20200,\x20" +
+            (0.12 + Math[_0x5d09fc(0x189)]() * 0.18) +
+            ")"),
+          (_0x298704[_0x5d09fc(0x16f)] = 0x8 + Math["random"]() * 0x12),
+          _0x298704[_0x5d09fc(0x246)]();
+      }
+      return (
+        _0x298704[_0x5d09fc(0x191)] !== undefined &&
+        ((_0x298704[_0x5d09fc(0x191)] = _0x5d09fc(0x196)),
+          _0x298704[_0x5d09fc(0x18e)](_0x4f907b, 0x0, 0x0),
+          (_0x298704[_0x5d09fc(0x191)] = _0x5d09fc(0x1fe))),
+        new _0x51308b["CanvasTexture"](_0x4f907b)
+      );
+    }
+    const stormShader = {
+      uniforms: { time: { value: 0x0 }, baseTexture: { value: null } },
+      vertexShader: _0x227757(0x19f),
+      fragmentShader:
+        "\x0a\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20float\x20time;\x0a\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20sampler2D\x20baseTexture;\x0a\x20\x20\x20\x20\x20\x20\x20\x20varying\x20vec2\x20vUv;\x0a\x20\x20\x20\x20\x20\x20\x20\x20void\x20main()\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vec2\x20uv\x20=\x20vUv;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20angle\x20=\x20length(uv\x20-\x20vec2(0.5))\x20*\x203.0;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20twist\x20=\x20sin(angle\x20*\x203.0\x20+\x20time)\x20*\x200.1;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20uv.x\x20+=\x20twist\x20*\x20sin(time\x20*\x200.5);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20uv.y\x20+=\x20twist\x20*\x20cos(time\x20*\x200.5);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vec4\x20texColor\x20=\x20texture2D(baseTexture,\x20uv);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20noise\x20=\x20sin(uv.x\x20*\x2010.0\x20+\x20time)\x20*\x20sin(uv.y\x20*\x2010.0\x20+\x20time)\x20*\x200.1;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20texColor.rgb\x20+=\x20noise\x20*\x20vec3(0.8,\x200.4,\x200.2);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_FragColor\x20=\x20texColor;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20",
+    },
+      planetRadius = 0xa,
+      planetGeometry = new _0x51308b[_0x227757(0x169)](planetRadius, 0x30, 0x30),
+      planetTexture = createPlanetTexture(),
+      planetMaterial = new _0x51308b[_0x227757(0x1fa)]({
+        uniforms: { time: { value: 0x0 }, baseTexture: { value: planetTexture } },
+        vertexShader: stormShader[_0x227757(0x22e)],
+        fragmentShader: stormShader[_0x227757(0x198)],
+      }),
+      planet = new _0x51308b[_0x227757(0x256)](planetGeometry, planetMaterial);
+    function _0x2796(_0x407fe2, _0x220a07) {
+      const _0x450c53 = _0x450c();
+      return (
+        (_0x2796 = function (_0x279609, _0x2c151e) {
+          _0x279609 = _0x279609 - 0x164;
+          let _0x1619b8 = _0x450c53[_0x279609];
+          return _0x1619b8;
+        }),
+        _0x2796(_0x407fe2, _0x220a07)
+      );
+    }
+    planet["position"][_0x227757(0x23b)](0x0, 0x0, 0x0),
+      scene[_0x227757(0x227)](planet);
+    const ringTexts = [
+      _0x227757(0x17e),
+      ...(window["dataLove2Loveloom"] &&
+        window["dataLove2Loveloom"][_0x227757(0x25b)][_0x227757(0x20a)]
+        ? window[_0x227757(0x219)][_0x227757(0x25b)][_0x227757(0x20a)]
+        : []),
+    ];
+    function createTextRings() {
+      const _0x45366b = _0x227757,
+        _0x4d5318 = ringTexts[_0x45366b(0x197)],
+        _0x141ae8 = planetRadius * 1.1,
+        _0x138817 = 0x5;
+      window[_0x45366b(0x24f)] = [];
+      for (let _0x3bee9b = 0x0; _0x3bee9b < _0x4d5318; _0x3bee9b++) {
+        const _0x2a8f91 =
+          ringTexts[_0x3bee9b % ringTexts[_0x45366b(0x197)]] + "\x20\x20\x20",
+          _0x17a2dc = _0x141ae8 + _0x3bee9b * _0x138817;
+        function _0x552cd2(_0x24cbbc) {
+          const _0x2f3a07 = _0x45366b,
+            _0x4e1d87 = _0x24cbbc[_0x2f3a07(0x1ec)](0x0);
+          if (
+            (_0x4e1d87 >= 0x4e00 && _0x4e1d87 <= 0x9fff) ||
+            (_0x4e1d87 >= 0x3040 && _0x4e1d87 <= 0x309f) ||
+            (_0x4e1d87 >= 0x30a0 && _0x4e1d87 <= 0x30ff) ||
+            (_0x4e1d87 >= 0xac00 && _0x4e1d87 <= 0xd7af)
+          )
+            return _0x2f3a07(0x1a8);
+          else {
+            if (_0x4e1d87 >= 0x0 && _0x4e1d87 <= 0x7f) return _0x2f3a07(0x186);
+          }
+          return _0x2f3a07(0x229);
+        }
+        let _0x2e320c = { cjk: 0x0, latin: 0x0, other: 0x0 };
+        for (let _0x142a3f of _0x2a8f91) {
+          _0x2e320c[_0x552cd2(_0x142a3f)]++;
+        }
+        const _0x185402 = _0x2a8f91[_0x45366b(0x197)],
+          _0x189cec = _0x2e320c[_0x45366b(0x1a8)] / _0x185402;
+        let _0x173f94 = { fontScale: 0.75, spacingScale: 1.1 };
+        if (_0x3bee9b === 0x0)
+          (_0x173f94[_0x45366b(0x16a)] = 0.55), (_0x173f94[_0x45366b(0x216)] = 0.9);
+        else
+          _0x3bee9b === 0x1 &&
+            ((_0x173f94[_0x45366b(0x16a)] = 0.65),
+              (_0x173f94[_0x45366b(0x216)] = 0x1));
+        _0x189cec > 0x0 &&
+          ((_0x173f94["fontScale"] *= 0.9), (_0x173f94[_0x45366b(0x216)] *= 1.1));
+        const _0x4a12a2 = 0xc8,
+          _0x42693f = Math[_0x45366b(0x205)](0x78, 0.9 * _0x4a12a2),
+          _0x4d8324 = document["createElement"](_0x45366b(0x1bb)),
+          _0x5f37a6 = _0x4d8324["getContext"]("2d");
+        _0x5f37a6[_0x45366b(0x1e0)] =
+          _0x45366b(0x1b3) + _0x42693f + _0x45366b(0x26b);
+        let _0x1885f5 = ringTexts[_0x3bee9b % ringTexts["length"]];
+        const _0x1d5814 = _0x45366b(0x19a);
+        let _0x223b03 = _0x1885f5 + _0x1d5814,
+          _0x243df3 = _0x5f37a6[_0x45366b(0x1b0)](_0x223b03)[_0x45366b(0x16c)],
+          _0x3135f9 = 0x2 * Math["PI"] * _0x17a2dc * 0xb4,
+          _0x118d4e = Math[_0x45366b(0x190)](_0x3135f9 / _0x243df3),
+          _0x228b29 = "";
+        for (let _0x39e4ba = 0x0; _0x39e4ba < _0x118d4e; _0x39e4ba++) {
+          _0x228b29 += _0x223b03;
+        }
+        let _0x51d314 = _0x243df3 * _0x118d4e;
+        (_0x51d314 < 0x1 || !_0x228b29) &&
+          ((_0x228b29 = _0x223b03), (_0x51d314 = _0x243df3));
+        const _0x3effaa = document[_0x45366b(0x20c)]("canvas");
+        (_0x3effaa["width"] = Math[_0x45366b(0x190)](Math["max"](0x1, _0x51d314))),
+          (_0x3effaa[_0x45366b(0x237)] = _0x4a12a2);
+        const _0x3e96da = _0x3effaa[_0x45366b(0x245)]("2d");
+        _0x3e96da[_0x45366b(0x21f)](0x0, 0x0, _0x3effaa["width"], _0x4a12a2),
+          (_0x3e96da[_0x45366b(0x1e0)] =
+            _0x45366b(0x1b3) + _0x42693f + _0x45366b(0x26b)),
+          (_0x3e96da["fillStyle"] = _0x45366b(0x249)),
+          (_0x3e96da[_0x45366b(0x231)] = _0x45366b(0x1f5)),
+          (_0x3e96da[_0x45366b(0x239)] = _0x45366b(0x1d8)),
+          (_0x3e96da[_0x45366b(0x1ce)] = _0x45366b(0x240)),
+          (_0x3e96da[_0x45366b(0x212)] = 0x18),
+          (_0x3e96da[_0x45366b(0x16f)] = 0x6),
+          (_0x3e96da[_0x45366b(0x1f4)] = _0x45366b(0x1a2)),
+          _0x3e96da[_0x45366b(0x19c)](_0x228b29, 0x0, _0x4a12a2 * 0.8),
+          (_0x3e96da["shadowColor"] = "#ffb3de"),
+          (_0x3e96da[_0x45366b(0x212)] = 0x10),
+          _0x3e96da[_0x45366b(0x179)](_0x228b29, 0x0, _0x4a12a2 * 0.8);
+        const _0x4e8a68 = new _0x51308b["CanvasTexture"](_0x3effaa);
+        (_0x4e8a68[_0x45366b(0x261)] = _0x51308b[_0x45366b(0x1f7)]),
+          (_0x4e8a68[_0x45366b(0x1d4)]["x"] = _0x51d314 / _0x3135f9),
+          (_0x4e8a68[_0x45366b(0x1d6)] = !![]);
+        const _0x588d4a = new _0x51308b[_0x45366b(0x1c3)](
+          _0x17a2dc,
+          _0x17a2dc,
+          0x1,
+          0x80,
+          0x1,
+          !![]
+        ),
+          _0x352fea = new _0x51308b[_0x45366b(0x1d9)]({
+            map: _0x4e8a68,
+            transparent: !![],
+            side: _0x51308b["DoubleSide"],
+            alphaTest: 0.01,
+          }),
+          _0x3660a2 = new _0x51308b[_0x45366b(0x256)](_0x588d4a, _0x352fea);
+        _0x3660a2[_0x45366b(0x24b)]["set"](0x0, 0x0, 0x0),
+          (_0x3660a2["rotation"]["y"] = Math["PI"] / 0x2);
+        const _0x113ddb = new _0x51308b[_0x45366b(0x1d0)]();
+        _0x113ddb[_0x45366b(0x227)](_0x3660a2),
+          (_0x113ddb["userData"] = {
+            ringRadius: _0x17a2dc,
+            angleOffset: 0.15 * Math["PI"] * 0.5,
+            speed: 0.008,
+            tiltSpeed: 0x0,
+            rollSpeed: 0x0,
+            pitchSpeed: 0x0,
+            tiltAmplitude: Math["PI"] / 0x3,
+            rollAmplitude: Math["PI"] / 0x6,
+            pitchAmplitude: Math["PI"] / 0x8,
+            tiltPhase: Math["PI"] * 0x2,
+            rollPhase: Math["PI"] * 0x2,
+            pitchPhase: Math["PI"] * 0x2,
+            isTextRing: !![],
+          });
+        const _0x39b413 = (_0x3bee9b / _0x4d5318) * (Math["PI"] / 0x1);
+        (_0x113ddb[_0x45366b(0x1fd)]["x"] = _0x39b413),
+          scene["add"](_0x113ddb),
+          window[_0x45366b(0x24f)]["push"](_0x113ddb);
+      }
+    }
+    createTextRings();
+    function updateTextRingsRotation() {
+      const _0x1e8402 = _0x227757;
+      if (!window["textRings"] || !camera) return;
+      window[_0x1e8402(0x24f)][_0x1e8402(0x1dc)]((_0x47d35b, _0x404222) => {
+        const _0x4d66fa = _0x1e8402;
+        _0x47d35b[_0x4d66fa(0x19e)][_0x4d66fa(0x1dc)]((_0x54aad6) => {
+          const _0x3aad1b = _0x4d66fa;
+          if (_0x54aad6[_0x3aad1b(0x268)]["initialAngle"] !== undefined) {
+            const _0x4c020d =
+              _0x54aad6["userData"][_0x3aad1b(0x1f0)] +
+              _0x47d35b["userData"][_0x3aad1b(0x223)],
+              _0x334486 =
+                Math["cos"](_0x4c020d) * _0x54aad6["userData"]["ringRadius"],
+              _0x3c2173 =
+                Math[_0x3aad1b(0x176)](_0x4c020d) *
+                _0x54aad6[_0x3aad1b(0x268)][_0x3aad1b(0x1b9)];
+            _0x54aad6[_0x3aad1b(0x24b)][_0x3aad1b(0x23b)](
+              _0x334486,
+              0x0,
+              _0x3c2173
+            );
+            const _0x4daa5e = new _0x51308b[_0x3aad1b(0x167)]();
+            _0x54aad6[_0x3aad1b(0x17c)](_0x4daa5e);
+            const _0x1ba294 = new _0x51308b[_0x3aad1b(0x167)]()
+            [_0x3aad1b(0x1e9)](camera[_0x3aad1b(0x24b)], _0x4daa5e)
+            ["normalize"](),
+              _0x933964 = Math[_0x3aad1b(0x19d)](_0x1ba294["x"], _0x1ba294["z"]);
+            _0x54aad6["rotation"]["y"] = _0x933964;
+          }
+        });
+      });
+    }
+    function animatePlanetSystem() {
+      const _0x189053 = _0x227757;
+      if (window[_0x189053(0x24f)]) {
+        const _0x23d30d = Date[_0x189053(0x1ac)]() * 0.001;
+        window[_0x189053(0x24f)][_0x189053(0x1dc)]((_0x1d0443, _0x382e44) => {
+          const _0x40c65e = _0x189053,
+            _0x4e9636 = _0x1d0443[_0x40c65e(0x268)];
+          _0x4e9636["angleOffset"] += _0x4e9636[_0x40c65e(0x16e)];
+          const _0x41319b =
+            Math[_0x40c65e(0x176)](
+              _0x23d30d * _0x4e9636[_0x40c65e(0x1b5)] +
+              _0x4e9636[_0x40c65e(0x17a)]
+            ) * _0x4e9636[_0x40c65e(0x23d)],
+            _0x5060f8 =
+              Math[_0x40c65e(0x166)](
+                _0x23d30d * _0x4e9636["rollSpeed"] + _0x4e9636[_0x40c65e(0x1ca)]
+              ) * _0x4e9636[_0x40c65e(0x267)],
+            _0x127b44 =
+              Math[_0x40c65e(0x176)](
+                _0x23d30d * _0x4e9636[_0x40c65e(0x200)] +
+                _0x4e9636[_0x40c65e(0x221)]
+              ) * _0x4e9636["pitchAmplitude"];
+          (_0x1d0443[_0x40c65e(0x1fd)]["x"] =
+            (_0x382e44 / window[_0x40c65e(0x24f)][_0x40c65e(0x197)]) *
+            (Math["PI"] / 0x1) +
+            _0x41319b),
+            (_0x1d0443[_0x40c65e(0x1fd)]["z"] = _0x5060f8),
+            (_0x1d0443["rotation"]["y"] = _0x4e9636[_0x40c65e(0x223)] + _0x127b44);
+          const _0x5ed13d =
+            Math[_0x40c65e(0x176)](
+              _0x23d30d * (_0x4e9636[_0x40c65e(0x1b5)] * 0.7) +
+              _0x4e9636[_0x40c65e(0x17a)]
+            ) * 0.3;
+          _0x1d0443[_0x40c65e(0x24b)]["y"] = _0x5ed13d;
+          const _0x3562d7 = (Math["sin"](_0x23d30d * 1.5 + _0x382e44) + 0x1) / 0x2,
+            _0x175d59 = _0x1d0443[_0x40c65e(0x19e)][0x0];
+          _0x175d59 &&
+            _0x175d59[_0x40c65e(0x265)] &&
+            (_0x175d59["material"][_0x40c65e(0x1eb)] = 0.7 + _0x3562d7 * 0.3);
+        }),
+          updateTextRingsRotation();
+      }
+    }
+    let fadeOpacity = 0.1,
+      fadeInProgress = ![],
+      hintIcon,
+      hintText;
+    function createHintIcon() {
+      const _0x6e222f = _0x227757;
+      (hintIcon = new _0x51308b[_0x6e222f(0x1d0)]()),
+        (hintIcon[_0x6e222f(0x206)] = "hint-icon-group"),
+        scene["add"](hintIcon);
+      const _0x1bcdac = new _0x51308b["Group"](),
+        _0x12cbc3 = new _0x51308b["Shape"](),
+        _0x520487 = 1.5,
+        _0x358fb7 = _0x520487 * 0.5;
+      _0x12cbc3["moveTo"](0x0, 0x0),
+        _0x12cbc3[_0x6e222f(0x217)](-_0x358fb7 * 0.4, -_0x520487 * 0.7),
+        _0x12cbc3["lineTo"](-_0x358fb7 * 0.25, -_0x520487 * 0.7),
+        _0x12cbc3["lineTo"](-_0x358fb7 * 0.5, -_0x520487),
+        _0x12cbc3[_0x6e222f(0x217)](_0x358fb7 * 0.5, -_0x520487),
+        _0x12cbc3[_0x6e222f(0x217)](_0x358fb7 * 0.25, -_0x520487 * 0.7),
+        _0x12cbc3["lineTo"](_0x358fb7 * 0.4, -_0x520487 * 0.7),
+        _0x12cbc3[_0x6e222f(0x1d5)]();
+      const _0x4ec05f = new _0x51308b[_0x6e222f(0x22f)](_0x12cbc3),
+        _0x4f53fe = new _0x51308b[_0x6e222f(0x1d9)]({
+          color: 0xffffff,
+          side: _0x51308b["DoubleSide"],
+        }),
+        _0x1e2a05 = new _0x51308b["Mesh"](_0x4ec05f, _0x4f53fe),
+        _0x41ba4f = new _0x51308b["ShapeGeometry"](_0x12cbc3),
+        _0x97a233 = new _0x51308b["MeshBasicMaterial"]({
+          color: 0xffffff,
+          side: _0x51308b[_0x6e222f(0x1fb)],
+        }),
+        _0x3f0a39 = new _0x51308b[_0x6e222f(0x256)](_0x41ba4f, _0x97a233);
+      _0x3f0a39[_0x6e222f(0x1a5)][_0x6e222f(0x23b)](0.8, 0.8, 0x1),
+        (_0x3f0a39[_0x6e222f(0x24b)]["z"] = 0.01),
+        _0x1bcdac["add"](_0x1e2a05, _0x3f0a39),
+        (_0x1bcdac[_0x6e222f(0x24b)]["y"] = _0x520487 / 0x2),
+        (_0x1bcdac[_0x6e222f(0x1fd)]["x"] = Math["PI"] / 0x2);
+      const _0x86b48b = new _0x51308b["RingGeometry"](1.8, 0x2, 0x20),
+        _0x1daecf = new _0x51308b["MeshBasicMaterial"]({
+          color: 0xffffff,
+          side: _0x51308b[_0x6e222f(0x1fb)],
+          transparent: !![],
+          opacity: 0.6,
+        }),
+        _0x188dc1 = new _0x51308b[_0x6e222f(0x256)](_0x86b48b, _0x1daecf);
+      (_0x188dc1[_0x6e222f(0x1fd)]["x"] = Math["PI"] / 0x2),
+        (hintIcon[_0x6e222f(0x268)][_0x6e222f(0x23e)] = _0x188dc1),
+        hintIcon["add"](_0x1bcdac),
+        hintIcon[_0x6e222f(0x227)](_0x188dc1),
+        hintIcon[_0x6e222f(0x24b)][_0x6e222f(0x23b)](1.5, 1.5, 0xf),
+        hintIcon[_0x6e222f(0x1a5)][_0x6e222f(0x23b)](0.8, 0.8, 0.8),
+        hintIcon[_0x6e222f(0x262)](planet[_0x6e222f(0x24b)]),
+        (hintIcon[_0x6e222f(0x268)]["initialPosition"] =
+          hintIcon["position"][_0x6e222f(0x172)]());
+    }
+    function animateHintIcon(_0x2538bd) {
+      const _0x44deb8 = _0x227757;
+      if (!hintIcon) return;
+      if (!introStarted) {
+        hintIcon[_0x44deb8(0x1e7)] = !![];
+        const _0x424721 = 2.5,
+          _0x49e298 = 1.5,
+          _0x2cba2c = Math[_0x44deb8(0x176)](_0x2538bd * _0x424721) * _0x49e298,
+          _0x4d5ce7 = new _0x51308b[_0x44deb8(0x167)]();
+        hintIcon[_0x44deb8(0x266)](_0x4d5ce7),
+          hintIcon["position"]
+          [_0x44deb8(0x1ae)](hintIcon[_0x44deb8(0x268)][_0x44deb8(0x1fc)])
+          [_0x44deb8(0x252)](_0x4d5ce7, -_0x2cba2c);
+        const _0x24f255 = hintIcon[_0x44deb8(0x268)][_0x44deb8(0x23e)],
+          _0x14b780 = 0x1 + Math[_0x44deb8(0x176)](_0x2538bd * _0x424721) * 0.1;
+        _0x24f255["scale"][_0x44deb8(0x23b)](_0x14b780, _0x14b780, 0x1),
+          (_0x24f255["material"][_0x44deb8(0x1eb)] =
+            0.5 + Math[_0x44deb8(0x176)](_0x2538bd * _0x424721) * 0.2),
+          hintText &&
+          ((hintText[_0x44deb8(0x1e7)] = !![]),
+            (hintText[_0x44deb8(0x265)][_0x44deb8(0x1eb)] =
+              0.7 + Math[_0x44deb8(0x176)](_0x2538bd * 0x3) * 0.3),
+            (hintText["position"]["y"] = 0xf + Math["sin"](_0x2538bd * 0x2) * 0.5),
+            hintText[_0x44deb8(0x262)](camera[_0x44deb8(0x24b)]));
+      } else {
+        if (hintIcon) hintIcon["visible"] = ![];
+        if (hintText) hintText[_0x44deb8(0x1e7)] = ![];
+      }
+    }
+    function animate() {
+      const _0xae3ef0 = _0x227757;
+      requestAnimationFrame(animate);
+      const _0x40bcec = performance[_0xae3ef0(0x1ac)]() * 0.001;
+      animateHintIcon(_0x40bcec),
+        controls["update"](),
+        (planet[_0xae3ef0(0x265)][_0xae3ef0(0x260)][_0xae3ef0(0x21a)]["value"] =
+          _0x40bcec * 0.5);
+      if (fadeInProgress && fadeOpacity < 0x1) {
+        fadeOpacity += 0.025;
+        if (fadeOpacity > 0x1) fadeOpacity = 0x1;
+      }
+      !introStarted
+        ? ((fadeOpacity = 0.1),
+          scene[_0xae3ef0(0x211)]((_0x137435) => {
+            const _0x2dfaac = _0xae3ef0;
+            if (_0x137435[_0x2dfaac(0x206)] === _0x2dfaac(0x1f1)) {
+              _0x137435["points"] &&
+                _0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x1eb)] !== undefined &&
+                ((_0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x1a1)] = ![]),
+                  (_0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x1eb)] = 0x1));
+              return;
+            }
+            if (
+              _0x137435["userData"][_0x2dfaac(0x1f3)] ||
+              (_0x137435[_0x2dfaac(0x234)] &&
+                _0x137435[_0x2dfaac(0x234)][_0x2dfaac(0x268)] &&
+                _0x137435[_0x2dfaac(0x234)][_0x2dfaac(0x268)][_0x2dfaac(0x1f3)])
+            )
+              _0x137435[_0x2dfaac(0x265)] &&
+                _0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x1eb)] !== undefined &&
+                ((_0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x1a1)] = ![]),
+                  (_0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x1eb)] = 0x1)),
+                _0x137435["material"] &&
+                _0x137435["material"][_0x2dfaac(0x20f)] &&
+                _0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x20f)][_0x2dfaac(0x23b)](
+                  0xffffff
+                );
+            else
+              _0x137435 !== planet &&
+                _0x137435 !== centralGlow &&
+                _0x137435 !== hintIcon &&
+                _0x137435["type"] !== "Scene" &&
+                !_0x137435["parent"][_0x2dfaac(0x1af)] &&
+                _0x137435[_0x2dfaac(0x265)] &&
+                _0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x1eb)] !== undefined &&
+                ((_0x137435["material"][_0x2dfaac(0x1a1)] = !![]),
+                  (_0x137435[_0x2dfaac(0x265)][_0x2dfaac(0x1eb)] = 0.1));
+          }),
+          (planet[_0xae3ef0(0x1e7)] = !![]),
+          (centralGlow[_0xae3ef0(0x1e7)] = !![]))
+        : scene["traverse"]((_0x3d6d49) => {
+          const _0x17a5d7 = _0xae3ef0;
+          !(
+            _0x3d6d49[_0x17a5d7(0x268)]["isTextRing"] ||
+            (_0x3d6d49["parent"] &&
+              _0x3d6d49["parent"][_0x17a5d7(0x268)] &&
+              _0x3d6d49[_0x17a5d7(0x234)][_0x17a5d7(0x268)]["isTextRing"]) ||
+            _0x3d6d49 === planet ||
+            _0x3d6d49 === centralGlow ||
+            _0x3d6d49[_0x17a5d7(0x264)] === "Scene"
+          )
+            ? _0x3d6d49["material"] &&
+            _0x3d6d49[_0x17a5d7(0x265)][_0x17a5d7(0x1eb)] !== undefined &&
+            ((_0x3d6d49[_0x17a5d7(0x265)][_0x17a5d7(0x1a1)] = !![]),
+              (_0x3d6d49[_0x17a5d7(0x265)][_0x17a5d7(0x1eb)] = fadeOpacity))
+            : _0x3d6d49[_0x17a5d7(0x265)] &&
+            _0x3d6d49["material"][_0x17a5d7(0x1eb)] !== undefined &&
+            ((_0x3d6d49[_0x17a5d7(0x265)][_0x17a5d7(0x1eb)] = 0x1),
+              (_0x3d6d49[_0x17a5d7(0x265)]["transparent"] = ![])),
+            _0x3d6d49[_0x17a5d7(0x265)] &&
+            _0x3d6d49[_0x17a5d7(0x265)]["color"] &&
+            _0x3d6d49["material"][_0x17a5d7(0x20f)][_0x17a5d7(0x23b)](0xffffff);
+        });
+      for (
+        let _0x568225 = shootingStars[_0xae3ef0(0x197)] - 0x1;
+        _0x568225 >= 0x0;
+        _0x568225--
+      ) {
+        const _0x10162e = shootingStars[_0x568225];
+        _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x201)]++;
+        let _0x4b6423 = 0x1;
+        if (_0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x201)] < 0x1e)
+          _0x4b6423 = _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x201)] / 0x1e;
+        else
+          _0x10162e["userData"][_0xae3ef0(0x201)] >
+            _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x165)] - 0x1e &&
+            (_0x4b6423 =
+              (_0x10162e["userData"][_0xae3ef0(0x165)] -
+                _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x201)]) /
+              0x1e);
+        _0x10162e["userData"]["progress"] +=
+          _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x16e)];
+        if (_0x10162e[_0xae3ef0(0x268)]["progress"] > 0x1) {
+          scene["remove"](_0x10162e),
+            shootingStars[_0xae3ef0(0x244)](_0x568225, 0x1);
+          continue;
+        }
+        const _0x18a1b9 = _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x21d)][
+          _0xae3ef0(0x1cc)
+        ](_0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x24d)]);
+        _0x10162e[_0xae3ef0(0x24b)]["copy"](_0x18a1b9),
+          (_0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x17d)][_0xae3ef0(0x265)][
+            _0xae3ef0(0x1eb)
+          ] = _0x4b6423),
+          (_0x10162e["userData"]["head"][_0xae3ef0(0x19e)][0x0][_0xae3ef0(0x265)][
+            _0xae3ef0(0x260)
+          ][_0xae3ef0(0x21a)]["value"] = _0x40bcec);
+        const _0x1a0fd5 = _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x1e3)],
+          _0x4ad542 = _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x1de)];
+        _0x4ad542[0x0][_0xae3ef0(0x1ae)](_0x18a1b9);
+        for (
+          let _0x5e6a6f = 0x1;
+          _0x5e6a6f < _0x10162e[_0xae3ef0(0x268)]["trailLength"];
+          _0x5e6a6f++
+        ) {
+          const _0xd5cab3 = Math[_0xae3ef0(0x205)](
+            0x0,
+            _0x10162e[_0xae3ef0(0x268)][_0xae3ef0(0x24d)] - _0x5e6a6f * 0.01
+          );
+          _0x4ad542[_0x5e6a6f][_0xae3ef0(0x1ae)](
+            _0x10162e["userData"][_0xae3ef0(0x21d)]["getPoint"](_0xd5cab3)
+          );
+        }
+        _0x1a0fd5["geometry"][_0xae3ef0(0x181)](_0x4ad542),
+          (_0x1a0fd5[_0xae3ef0(0x265)][_0xae3ef0(0x1eb)] = _0x4b6423 * 0.7);
+      }
+      shootingStars[_0xae3ef0(0x197)] < 0x3 &&
+        Math["random"]() < 0.02 &&
+        createShootingStar(),
+        scene[_0xae3ef0(0x211)]((_0x3a63bb) => {
+          const _0x2e58bc = _0xae3ef0;
+          if (
+            _0x3a63bb[_0x2e58bc(0x214)] &&
+            _0x3a63bb[_0x2e58bc(0x268)][_0x2e58bc(0x207)] &&
+            _0x3a63bb[_0x2e58bc(0x268)][_0x2e58bc(0x1c7)]
+          ) {
+            const _0x4cfc85 = _0x3a63bb[_0x2e58bc(0x1ef)][_0x2e58bc(0x177)](
+              _0x2e58bc(0x24b)
+            );
+            let _0x3dae94 = ![];
+            for (
+              let _0x1f96c9 = 0x0;
+              _0x1f96c9 < _0x4cfc85[_0x2e58bc(0x170)];
+              _0x1f96c9++
+            ) {
+              const _0xc4ccd4 =
+                _0x4cfc85[_0x2e58bc(0x1dd)](_0x1f96c9) +
+                _0x3a63bb[_0x2e58bc(0x24b)]["x"],
+                _0x2ecc4f =
+                  _0x4cfc85[_0x2e58bc(0x1da)](_0x1f96c9) +
+                  _0x3a63bb["position"]["y"],
+                _0x524508 =
+                  _0x4cfc85[_0x2e58bc(0x193)](_0x1f96c9) +
+                  _0x3a63bb[_0x2e58bc(0x24b)]["z"],
+                _0xdca1bb = camera["position"][_0x2e58bc(0x26a)](
+                  new _0x51308b["Vector3"](_0xc4ccd4, _0x2ecc4f, _0x524508)
+                );
+              if (_0xdca1bb < 0xa) {
+                _0x3dae94 = !![];
+                break;
+              }
+            }
+            _0x3dae94
+              ? _0x3a63bb[_0x2e58bc(0x265)] !==
+              _0x3a63bb[_0x2e58bc(0x268)][_0x2e58bc(0x207)] &&
+              ((_0x3a63bb["material"] = _0x3a63bb["userData"][_0x2e58bc(0x207)]),
+                (_0x3a63bb[_0x2e58bc(0x1ef)] =
+                  _0x3a63bb["userData"]["geometryNear"]))
+              : _0x3a63bb[_0x2e58bc(0x265)] !==
+              _0x3a63bb["userData"]["materialFar"] &&
+              ((_0x3a63bb[_0x2e58bc(0x265)] =
+                _0x3a63bb[_0x2e58bc(0x268)][_0x2e58bc(0x1c7)]),
+                (_0x3a63bb[_0x2e58bc(0x1ef)] =
+                  _0x3a63bb[_0x2e58bc(0x268)]["geometryFar"]));
+          }
+        }),
+        planet[_0xae3ef0(0x262)](camera[_0xae3ef0(0x24b)]),
+        animatePlanetSystem(),
+        starField &&
+        starField[_0xae3ef0(0x265)] &&
+        starField[_0xae3ef0(0x265)][_0xae3ef0(0x1eb)] !== undefined &&
+        ((starField[_0xae3ef0(0x265)]["opacity"] = 0x1),
+          (starField[_0xae3ef0(0x265)]["transparent"] = ![])),
+        renderer["render"](scene, camera);
+    }
+    function createHintText() {
+      const _0x54d101 = _0x227757,
+        _0x3fd6c2 = 0x200,
+        _0x1fac49 = document[_0x54d101(0x20c)](_0x54d101(0x1bb));
+      _0x1fac49[_0x54d101(0x16c)] = _0x1fac49["height"] = _0x3fd6c2;
+      const _0x299114 = _0x1fac49[_0x54d101(0x245)]("2d"),
+        _0x1e7929 = 0x32,
+        _0x94dcbc = _0x54d101(0x1ed);
+      (_0x299114[_0x54d101(0x1e0)] =
+        "bold\x20" + _0x1e7929 + "px\x20Arial,\x20sans-serif"),
+        (_0x299114[_0x54d101(0x231)] = _0x54d101(0x194)),
+        (_0x299114[_0x54d101(0x239)] = "middle"),
+        (_0x299114[_0x54d101(0x1ce)] = _0x54d101(0x1e5)),
+        (_0x299114[_0x54d101(0x212)] = 0x5),
+        (_0x299114["lineWidth"] = 0x2),
+        (_0x299114[_0x54d101(0x1f4)] = _0x54d101(0x233)),
+        _0x299114["strokeText"](_0x94dcbc, _0x3fd6c2 / 0x2, _0x3fd6c2 / 0x2),
+        (_0x299114[_0x54d101(0x1ce)] = _0x54d101(0x240)),
+        (_0x299114[_0x54d101(0x212)] = 0x5),
+        (_0x299114[_0x54d101(0x16f)] = 0x2),
+        (_0x299114[_0x54d101(0x1f4)] = _0x54d101(0x22a)),
+        _0x299114[_0x54d101(0x19c)](_0x94dcbc, _0x3fd6c2 / 0x2, _0x3fd6c2 / 0x2),
+        (_0x299114[_0x54d101(0x1ce)] = "transparent"),
+        (_0x299114[_0x54d101(0x212)] = 0x0),
+        (_0x299114[_0x54d101(0x1e8)] = _0x54d101(0x249)),
+        _0x299114["fillText"](_0x94dcbc, _0x3fd6c2 / 0x2, _0x3fd6c2 / 0x2);
+      const _0x54dbeb = new _0x51308b[_0x54d101(0x21e)](_0x1fac49);
+      _0x54dbeb[_0x54d101(0x1d6)] = !![];
+      const _0x3166f5 = new _0x51308b[_0x54d101(0x1d9)]({
+        map: _0x54dbeb,
+        transparent: !![],
+        side: _0x51308b["DoubleSide"],
+      }),
+        _0x54705d = new _0x51308b[_0x54d101(0x24e)](0x10, 0x8);
+      (hintText = new _0x51308b[_0x54d101(0x256)](_0x54705d, _0x3166f5)),
+        hintText[_0x54d101(0x24b)][_0x54d101(0x23b)](0x0, 0xf, 0x0),
+        scene[_0x54d101(0x227)](hintText);
+    }
+    createShootingStar(),
+      createHintIcon(),
+      createHintText(),
+      window[_0x227757(0x224)](_0x227757(0x16b), () => {
+        const _0x50019b = _0x227757;
+        (camera[_0x50019b(0x164)] =
+          window[_0x50019b(0x1d3)] / window[_0x50019b(0x241)]),
+          camera[_0x50019b(0x1a7)](),
+          renderer[_0x50019b(0x1ba)](
+            window[_0x50019b(0x1d3)],
+            window[_0x50019b(0x241)]
+          ),
+          controls[_0x50019b(0x269)][_0x50019b(0x23b)](0x0, 0x0, 0x0),
+          controls[_0x50019b(0x242)]();
+      });
+    function startCameraAnimation() {
+      const _0x364dea = _0x227757,
+        _0x295d88 = {
+          x: camera[_0x364dea(0x24b)]["x"],
+          y: camera[_0x364dea(0x24b)]["y"],
+          z: camera[_0x364dea(0x24b)]["z"],
+        },
+        _0x32c093 = { x: _0x295d88["x"], y: 0x0, z: _0x295d88["z"] },
+        _0x34ff88 = { x: _0x295d88["x"], y: 0x0, z: 0xa0 },
+        _0xe277c1 = { x: -0x28, y: 0x64, z: 0x64 },
+        _0x1097c7 = 0.2,
+        _0xd396f4 = 0.55,
+        _0x45afe4 = 0.4;
+      let _0x3cc745 = 0x0;
+      function _0xc32446() {
+        const _0x22cb1d = _0x364dea;
+        _0x3cc745 += 0.00101;
+        let _0x347bfc;
+        if (_0x3cc745 < _0x1097c7) {
+          let _0x3de8fe = _0x3cc745 / _0x1097c7;
+          _0x347bfc = {
+            x: _0x295d88["x"] + (_0x32c093["x"] - _0x295d88["x"]) * _0x3de8fe,
+            y: _0x295d88["y"] + (_0x32c093["y"] - _0x295d88["y"]) * _0x3de8fe,
+            z: _0x295d88["z"] + (_0x32c093["z"] - _0x295d88["z"]) * _0x3de8fe,
+          };
+        } else {
+          if (_0x3cc745 < _0x1097c7 + _0xd396f4) {
+            let _0x266402 = (_0x3cc745 - _0x1097c7) / _0xd396f4;
+            _0x347bfc = {
+              x: _0x32c093["x"] + (_0x34ff88["x"] - _0x32c093["x"]) * _0x266402,
+              y: _0x32c093["y"] + (_0x34ff88["y"] - _0x32c093["y"]) * _0x266402,
+              z: _0x32c093["z"] + (_0x34ff88["z"] - _0x32c093["z"]) * _0x266402,
+            };
+          } else {
+            if (_0x3cc745 < _0x1097c7 + _0xd396f4 + _0x45afe4) {
+              let _0xf097a2 = (_0x3cc745 - _0x1097c7 - _0xd396f4) / _0x45afe4,
+                _0x33fdad =
+                  0.5 - 0.5 * Math[_0x22cb1d(0x166)](Math["PI"] * _0xf097a2);
+              _0x347bfc = {
+                x: _0x34ff88["x"] + (_0xe277c1["x"] - _0x34ff88["x"]) * _0x33fdad,
+                y: _0x34ff88["y"] + (_0xe277c1["y"] - _0x34ff88["y"]) * _0x33fdad,
+                z: _0x34ff88["z"] + (_0xe277c1["z"] - _0x34ff88["z"]) * _0x33fdad,
+              };
+            } else {
+              camera[_0x22cb1d(0x24b)][_0x22cb1d(0x23b)](
+                _0xe277c1["x"],
+                _0xe277c1["y"],
+                _0xe277c1["z"]
+              ),
+                camera[_0x22cb1d(0x262)](0x0, 0x0, 0x0),
+                controls["target"]["set"](0x0, 0x0, 0x0),
+                controls[_0x22cb1d(0x242)](),
+                (controls[_0x22cb1d(0x202)] = !![]);
+              return;
+            }
+          }
+        }
+        camera[_0x22cb1d(0x24b)]["set"](
+          _0x347bfc["x"],
+          _0x347bfc["y"],
+          _0x347bfc["z"]
+        ),
+          camera["lookAt"](0x0, 0x0, 0x0),
+          requestAnimationFrame(_0xc32446);
+      }
+      (controls[_0x364dea(0x202)] = ![]), _0xc32446();
+    }
+    const raycaster = new _0x51308b["Raycaster"](),
+      mouse = new _0x51308b["Vector2"]();
+    let introStarted = ![];
+    const originalStarCount =
+      starGeometry[_0x227757(0x177)]("position")[_0x227757(0x170)];
+    starField &&
+      starField[_0x227757(0x1ef)] &&
+      starField[_0x227757(0x1ef)][_0x227757(0x1c9)](
+        0x0,
+        Math[_0x227757(0x187)](originalStarCount * 0.1)
+      );
+    function requestFullScreen() {
+      const _0x3e76c6 = _0x227757,
+        _0x43f32a = document[_0x3e76c6(0x1c2)];
+      if (_0x43f32a[_0x3e76c6(0x1f2)]) _0x43f32a[_0x3e76c6(0x1f2)]();
+      else {
+        if (_0x43f32a[_0x3e76c6(0x210)]) _0x43f32a[_0x3e76c6(0x210)]();
+        else {
+          if (_0x43f32a[_0x3e76c6(0x204)]) _0x43f32a["webkitRequestFullscreen"]();
+          else _0x43f32a[_0x3e76c6(0x1bd)] && _0x43f32a[_0x3e76c6(0x1bd)]();
+        }
+      }
+    }
+    function onCanvasClick(_0x4c22c2) {
+      const _0x30178b = _0x227757;
+      if (introStarted) return;
+      const _0x45d072 = renderer[_0x30178b(0x236)]["getBoundingClientRect"]();
+      (mouse["x"] =
+        ((_0x4c22c2[_0x30178b(0x25e)] - _0x45d072[_0x30178b(0x1f5)]) /
+          _0x45d072["width"]) *
+        0x2 -
+        0x1),
+        (mouse["y"] =
+          -(
+            (_0x4c22c2[_0x30178b(0x1a3)] - _0x45d072[_0x30178b(0x213)]) /
+            _0x45d072[_0x30178b(0x237)]
+          ) *
+          0x2 +
+          0x1),
+        raycaster[_0x30178b(0x192)](mouse, camera);
+      const _0x5148ba = raycaster[_0x30178b(0x235)](planet);
+      if (_0x5148ba["length"] > 0x0)
+        requestFullScreen(),
+          (introStarted = !![]),
+          (fadeInProgress = !![]),
+          document["body"]["classList"][_0x30178b(0x227)](_0x30178b(0x182)),
+          startCameraAnimation(),
+          starField &&
+          starField[_0x30178b(0x1ef)] &&
+          starField[_0x30178b(0x1ef)][_0x30178b(0x1c9)](0x0, originalStarCount);
+      else {
+        if (introStarted) {
+          const _0x43bc81 = raycaster[_0x30178b(0x180)](heartPointClouds);
+          if (_0x43bc81[_0x30178b(0x197)] > 0x0) {
+            const _0x2d515c = _0x43bc81[0x0][_0x30178b(0x1d2)];
+            controls[_0x30178b(0x269)][_0x30178b(0x1ae)](
+              _0x2d515c[_0x30178b(0x24b)]
+            );
+          }
+        }
+      }
+    }
+    renderer["domElement"][_0x227757(0x224)]("click", onCanvasClick),
+      animate(),
+      (planet[_0x227757(0x206)] = _0x227757(0x26f)),
+      (centralGlow[_0x227757(0x206)] = _0x227757(0x25d));
+    function setFullScreen() {
+      const _0x227e19 = _0x227757,
+        _0x4f9f64 = window[_0x227e19(0x241)] * 0.01;
+      document[_0x227e19(0x1c2)][_0x227e19(0x1df)][_0x227e19(0x1d1)](
+        _0x227e19(0x20b),
+        _0x4f9f64 + "px"
+      );
+      const _0x295e30 = document[_0x227e19(0x18c)]("container");
+      _0x295e30 &&
+        (_0x295e30["style"][_0x227e19(0x237)] = window[_0x227e19(0x241)] + "px");
+    }
+    window[_0x227757(0x224)](_0x227757(0x16b), setFullScreen),
+      window["addEventListener"]("orientationchange", () => {
+        setTimeout(setFullScreen, 0x12c);
+      }),
+      setFullScreen();
+    const preventDefault = (_0x2627b8) => _0x2627b8[_0x227757(0x171)]();
+    document[_0x227757(0x224)](_0x227757(0x25f), preventDefault, { passive: ![] }),
+      document[_0x227757(0x224)](_0x227757(0x259), preventDefault, {
+        passive: ![],
+      });
+    const container = document["getElementById"](_0x227757(0x23a));
+    container &&
+      container[_0x227757(0x224)](_0x227757(0x25f), preventDefault, {
+        passive: ![],
+      });
+    function checkOrientation() {
+      const _0x31bac3 = _0x227757,
+        _0x50d6c6 =
+          window[_0x31bac3(0x241)] > window[_0x31bac3(0x1d3)] &&
+          _0x31bac3(0x18d) in window;
+      _0x50d6c6
+        ? document[_0x31bac3(0x184)][_0x31bac3(0x270)][_0x31bac3(0x227)](
+          "portrait-mode"
+        )
+        : document["body"]["classList"][_0x31bac3(0x188)](_0x31bac3(0x253));
+    }
+    function _0x450c() {
+      const _0xde197a = [
+        "stroke",
+        "BackSide",
+        "push",
+        "white",
+        "Anonymous",
+        "position",
+        "renderOrder",
+        "progress",
+        "PlaneGeometry",
+        "textRings",
+        "restore",
+        "\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20varying\x20vec3\x20vNormal;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20float\x20time;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20void\x20main()\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20intensity\x20=\x20pow(0.7\x20-\x20dot(vNormal,\x20vec3(0.0,\x200.0,\x201.0)),\x202.0);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_FragColor\x20=\x20vec4(1.0,\x201.0,\x201.0,\x20intensity\x20*\x20(0.8\x20+\x20sin(time\x20*\x205.0)\x20*\x200.2));\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20",
+        "addScaledVector",
+        "portrait-mode",
+        "NormalBlending",
+        "magFilter",
+        "Mesh",
+        "pow",
+        "Line",
+        "gesturestart",
+        "moveTo",
+        "data",
+        "Points",
+        "main-glow",
+        "clientX",
+        "touchmove",
+        "uniforms",
+        "wrapS",
+        "lookAt",
+        "AdditiveBlending",
+        "type",
+        "material",
+        "getWorldDirection",
+        "rollAmplitude",
+        "userData",
+        "target",
+        "distanceTo",
+        "px\x20Arial,\x20sans-serif",
+        "./image/1.jpg",
+        "BufferGeometry",
+        "Số\x20lượng\x20ảnh:\x20",
+        "main-planet",
+        "classList",
+        "\x0a\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20float\x20uSize;\x0a\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20float\x20uTime;\x0a\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20float\x20uRippleTime;\x0a\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20float\x20uRippleSpeed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20float\x20uRippleWidth;\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20varying\x20vec3\x20vColor;\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20void\x20main()\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20//\x20Lấy\x20màu\x20gốc\x20từ\x20geometry\x20(giống\x20hệt\x20vertexColors:\x20true)\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vColor\x20=\x20color;\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vec4\x20modelPosition\x20=\x20modelMatrix\x20*\x20vec4(position,\x201.0);\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20//\x20----\x20LOGIC\x20HIỆU\x20ỨNG\x20GỢN\x20SÓNG\x20----\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20if\x20(uRippleTime\x20>\x200.0)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20rippleRadius\x20=\x20(uTime\x20-\x20uRippleTime)\x20*\x20uRippleSpeed;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20particleDist\x20=\x20length(modelPosition.xyz);\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20strength\x20=\x201.0\x20-\x20smoothstep(rippleRadius\x20-\x20uRippleWidth,\x20rippleRadius\x20+\x20uRippleWidth,\x20particleDist);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20strength\x20*=\x20smoothstep(rippleRadius\x20+\x20uRippleWidth,\x20rippleRadius\x20-\x20uRippleWidth,\x20particleDist);\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20if\x20(strength\x20>\x200.0)\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vColor\x20+=\x20vec3(strength\x20*\x202.0);\x20//\x20Làm\x20màu\x20sáng\x20hơn\x20khi\x20sóng\x20đi\x20qua\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vec4\x20viewPosition\x20=\x20viewMatrix\x20*\x20modelPosition;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_Position\x20=\x20projectionMatrix\x20*\x20viewPosition;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20//\x20Dòng\x20này\x20làm\x20cho\x20các\x20hạt\x20nhỏ\x20hơn\x20khi\x20ở\x20xa,\x20mô\x20phỏng\x20hành\x20vi\x20của\x20PointsMaterial\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_PointSize\x20=\x20uSize\x20/\x20-viewPosition.z;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20",
+        "aspect",
+        "maxLife",
+        "cos",
+        "Vector3",
+        "13407eHuFFq",
+        "SphereGeometry",
+        "fontScale",
+        "resize",
+        "width",
+        "spin",
+        "speed",
+        "lineWidth",
+        "count",
+        "preventDefault",
+        "clone",
+        "Image",
+        "autoRotateSpeed",
+        "getMaxAnisotropy",
+        "sin",
+        "getAttribute",
+        "SpriteMaterial",
+        "fillText",
+        "tiltPhase",
+        "637650BDoMYi",
+        "getWorldPosition",
+        "head",
+        "Love",
+        "118785oxNQWD",
+        "intersectObjects",
+        "setFromPoints",
+        "intro-started",
+        "SRGBColorSpace",
+        "body",
+        "fillRect",
+        "latin",
+        "floor",
+        "remove",
+        "random",
+        "enablePan",
+        "clip",
+        "getElementById",
+        "ontouchstart",
+        "drawImage",
+        "arcTo",
+        "ceil",
+        "filter",
+        "setFromCamera",
+        "getZ",
+        "center",
+        "651bKajjz",
+        "blur(2px)",
+        "length",
+        "fragmentShader",
+        "translate",
+        "\x20\x20\x20",
+        "slice",
+        "strokeText",
+        "atan2",
+        "children",
+        "\x0a\x20\x20\x20\x20\x20\x20\x20\x20varying\x20vec2\x20vUv;\x0a\x20\x20\x20\x20\x20\x20\x20\x20void\x20main()\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vUv\x20=\x20uv;\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_Position\x20=\x20projectionMatrix\x20*\x20modelViewMatrix\x20*\x20vec4(position,\x201.0);\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20",
+        "WebGLRenderer",
+        "transparent",
+        "#fff",
+        "clientY",
+        "arms",
+        "scale",
+        "createRadialGradient",
+        "updateProjectionMatrix",
+        "cjk",
+        "#a259f7",
+        "multiplyScalar",
+        "56072VDBTjV",
+        "now",
+        "135apmwdc",
+        "copy",
+        "isGroup",
+        "measureText",
+        "AmbientLight",
+        "861405BwBqAJ",
+        "bold\x20",
+        "PointsMaterial",
+        "tiltSpeed",
+        "hsla(",
+        "DOMContentLoaded",
+        ",\x2080%,\x2050%,\x200.6)",
+        "ringRadius",
+        "setSize",
+        "canvas",
+        "anisotropy",
+        "msRequestFullscreen",
+        "\x0a\x20\x20\x20\x20\x20\x20\x20\x20varying\x20vec3\x20vNormal;\x0a\x20\x20\x20\x20\x20\x20\x20\x20uniform\x20vec3\x20glowColor;\x0a\x20\x20\x20\x20\x20\x20\x20\x20void\x20main()\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20intensity\x20=\x20pow(0.7\x20-\x20dot(vNormal,\x20vec3(0.0,\x200.0,\x201.0)),\x202.0);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_FragColor\x20=\x20vec4(glowColor,\x201.0)\x20*\x20intensity;\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20",
+        "randomness",
+        "maxDistance",
+        "radius",
+        "documentElement",
+        "CylinderGeometry",
+        "TextureLoader",
+        "capabilities",
+        "CubicBezierCurve3",
+        "materialFar",
+        "beginPath",
+        "setDrawRange",
+        "rollPhase",
+        "setAttribute",
+        "getPoint",
+        "devicePixelRatio",
+        "shadowColor",
+        "rgba(255,255,255,0.8)",
+        "Group",
+        "setProperty",
+        "object",
+        "innerWidth",
+        "repeat",
+        "closePath",
+        "needsUpdate",
+        "#b2ff59",
+        "alphabetic",
+        "MeshBasicMaterial",
+        "getY",
+        "#3fd8c7",
+        "forEach",
+        "getX",
+        "trailPoints",
+        "style",
+        "font",
+        "#e1aaff",
+        "18210fZLZut",
+        "trail",
+        "insideColor",
+        "#ffb3de",
+        "#f48fb1",
+        "visible",
+        "fillStyle",
+        "subVectors",
+        "Sprite",
+        "opacity",
+        "charCodeAt",
+        "Chạm\x20Vào\x20Tinh\x20Cầu",
+        "BufferAttribute",
+        "geometry",
+        "initialAngle",
+        "starfield",
+        "requestFullscreen",
+        "isTextRing",
+        "strokeStyle",
+        "left",
+        "appendChild",
+        "RepeatWrapping",
+        "log",
+        "#ffffff",
+        "ShaderMaterial",
+        "DoubleSide",
+        "initialPosition",
+        "rotation",
+        "none",
+        "./image/3.jpg",
+        "pitchSpeed",
+        "life",
+        "enabled",
+        "lerp",
+        "webkitRequestFullscreen",
+        "max",
+        "name",
+        "materialNear",
+        "FogExp2",
+        "orientationchange",
+        "ringTexts",
+        "--vh",
+        "createElement",
+        "2479510mODeFp",
+        "PerspectiveCamera",
+        "color",
+        "mozRequestFullScreen",
+        "traverse",
+        "shadowBlur",
+        "top",
+        "isPoints",
+        "Color",
+        "spacingScale",
+        "lineTo",
+        ",\x20Điểm\x20mỗi\x20ảnh:\x20",
+        "dataLove2Loveloom",
+        "time",
+        "#f06292",
+        "enableDamping",
+        "curve",
+        "CanvasTexture",
+        "clearRect",
+        "\x0a\x20\x20\x20\x20\x20\x20\x20\x20varying\x20vec3\x20vColor;\x0a\x20\x20\x20\x20\x20\x20\x20\x20void\x20main()\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20//\x20Làm\x20cho\x20các\x20hạt\x20có\x20hình\x20tròn\x20thay\x20vì\x20hình\x20vuông\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20float\x20dist\x20=\x20length(gl_PointCoord\x20-\x20vec2(0.5));\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20if\x20(dist\x20>\x200.5)\x20discard;\x0a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_FragColor\x20=\x20vec4(vColor,\x201.0);\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20",
+        "pitchPhase",
+        "./image/5.jpg",
+        "angleOffset",
+        "addEventListener",
+        "fog",
+        "minDistance",
+        "add",
+        "#f8bbd0",
+        "other",
+        "rgba(220,\x20180,\x20255,\x200.5)",
+        "randomnessPower",
+        "setPixelRatio",
+        "412NNQqaQ",
+        "vertexShader",
+        "ShapeGeometry",
+        "zoomSpeed",
+        "textAlign",
+        "addColorStop",
+        "rgba(255,\x20200,\x20220,\x200.8)",
+        "parent",
+        "intersectObject",
+        "domElement",
+        "height",
+        "geometryNear",
+        "textBaseline",
+        "container",
+        "set",
+        "\x0a\x20\x20\x20\x20\x20\x20\x20\x20varying\x20vec3\x20vNormal;\x0a\x20\x20\x20\x20\x20\x20\x20\x20void\x20main()\x20{\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20vNormal\x20=\x20normalize(normalMatrix\x20*\x20normal);\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20gl_Position\x20=\x20projectionMatrix\x20*\x20modelViewMatrix\x20*\x20vec4(position,\x201.0);\x0a\x20\x20\x20\x20\x20\x20\x20\x20}\x0a\x20\x20\x20\x20",
+        "tiltAmplitude",
+        "ringMesh",
+        "outsideColor",
+        "#e0b3ff",
+        "innerHeight",
+        "update",
+        "rotateSpeed",
+        "splice",
+        "getContext",
+      ];
+      _0x450c = function () {
+        return _0xde197a;
+      };
+      return _0x450c();
+    }
+    window[_0x227757(0x224)](_0x227757(0x1b7), checkOrientation),
+      window[_0x227757(0x224)]("resize", checkOrientation),
+      window[_0x227757(0x224)](_0x227757(0x209), () => {
+        setTimeout(checkOrientation, 0xc8);
+      });
+
+  </script>
+
+  <script>
+    const musicManager = {
+      audio: null,
+      isPlaying: false,
+
+      init() {
+        this.audio = new Audio('./Ly.mp3');
+        this.audio.loop = true;
+        this.audio.volume = 0.7;
+        this.audio.preload = "auto";
+        this.audio.setAttribute('playsinline', '');
+
+        this.audio.onplay = () => {
+          this.isPlaying = true;
+          this.updateUI();
+        };
+
+        this.audio.onpause = () => {
+          this.isPlaying = false;
+          this.updateUI();
+        };
+
+        document.addEventListener('click', () => {
+          if (!this.isPlaying) {
+            this.audio.play().catch(err => {
+              console.warn('Không thể phát nhạc:', err);
+            });
+          }
+        }, { once: true });
+
+        this.updateUI();
+      },
+
+      togglePlayback() {
+        if (!this.audio) return;
+        if (this.audio.paused) {
+          this.audio.play().catch(e => {
+            console.warn('Lỗi phát nhạc:', e);
+          });
+        } else {
+          this.audio.pause();
+        }
+      },
+
+      updateUI() {
+        const icon = document.getElementById('audio-icon');
+        if (this.isPlaying) {
+          icon.classList.remove('fa-volume-xmark');
+          icon.classList.add('fa-volume-high');
+        } else {
+          icon.classList.remove('fa-volume-high');
+          icon.classList.add('fa-volume-xmark');
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      musicManager.init();
+      document.getElementById('toggle-audio').addEventListener('click', () => {
+        musicManager.togglePlayback();
+      });
+    });
+  </script>
+</body>
+
+</html>

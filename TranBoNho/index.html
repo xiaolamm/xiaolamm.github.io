@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anh có điều muốn nói</title>
+    <link rel="icon" href="./i.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background:  #FADADD;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #2C2C2C;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: #2F3E9E;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-in;
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        #playButton {
+            position: absolute;
+            z-index: 1;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: 'Arial', sans-serif;
+            background: #FF5733	;
+            color: #FFC300	;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        #playButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: #D0F0C0	;
+            color: #6A0DAD	;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        #audioPlayer {
+            display: none;
+        }
+
+        /* Style cho khung thông báo */
+        .notification {
+            position: absolute;
+            width: 240px;
+            height: 160px;
+            background-color: #FFB6C1;
+            color: rgb(0, 0, 0);
+            font-size: 16px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            z-index: 2;
+            border: 4px solid #FFE4E1;
+            box-shadow: 0 4px 12px rgba(255, 182, 193, 0.5);
+            animation: bubblePop 0.6s ease-out;
+            transform-origin: center;
+        }
+
+        @keyframes bubblePop {
+            0% {
+                opacity: 0;
+                transform: scale(0.1) rotate(0deg);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.2) rotate(5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            width: 100%;
+            padding: 5px;
+            background-color: #ffffff;
+            border-radius: 5px 5px 0 0;
+            color: white;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+
+        .notification-header span {
+            color: rgb(0, 0, 0);
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .notification p {
+            margin: 0;
+            text-align: center;
+            padding: 10px;
+            flex-grow: 1;
+            display: flex;
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-style: normal;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .minimize-btn {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            background-color: transparent;
+            border: none;
+            color: rgb(0, 0, 0);
+            margin-left: auto;
+        }
+
+        .minimize-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 1.5rem;
+            }
+
+            #playButton {
+                padding: 12px 25px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            #playButton {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Anh có điều muốn nói</h1>
+    <button id="playButton" onclick="generateRandomNotifications()">Nhấn vào đây nè!</button>
+    
+    <audio id="audioPlayer" src="./TBN.mp3"></audio>
+
+    <script>
+        const playButton = document.getElementById("playButton");
+        const audioPlayer = document.getElementById("audioPlayer");
+        playButton.addEventListener('click', function() {
+            playButton.style.display = 'none';
+        });
+
+        // Danh sách tin nhắn
+        const messages = ["Nhớ nhớ nhớ em!","Nhớ em!","Không sao quên được!"];
+        const notificationCount = 500;
+        let createdNotifications = 0;
+
+        function generateRandomNotifications() {
+            // Phát nhạc
+            audioPlayer.play();
+            
+            // Thêm hiệu ứng khi click
+            playButton.style.transform = "scale(0.95)";
+            setTimeout(() => {
+                playButton.style.transform = "scale(1)";
+            }, 150);
+
+            // Tạo các khung thông báo
+            for (let i = 0; i < notificationCount; i++) {
+                setTimeout(() => {
+                    const notification = document.createElement('div');
+                    notification.className = 'notification';
+                    
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    notification.innerHTML = `
+                        <div class="notification-header">
+                            <button class="minimize-btn" onclick="minimizeNotification(this)">–</button>
+                            <span>Tràn ngập bộ</span>
+                        </div>
+                        <p>${randomMessage}</p>
+                    `;
+                    
+                    const randomX = Math.random() * (window.innerWidth - 240);
+                    const randomY = Math.random() * (window.innerHeight - 160);
+                    notification.style.left = randomX + 'px';
+                    notification.style.top = randomY + 'px';
+                    
+                    document.body.appendChild(notification);
+                    createdNotifications++;
+                    
+                    if (createdNotifications === notificationCount) {
+                        showFinalMessage();
+                    }
+                }, i * 200);
+            }
+        }
+
+        function minimizeNotification(button) {
+            const notification = button.closest('.notification');
+            notification.style.display = 'none';
+        }
+
+        function showFinalMessage() {
+            console.log('Đã tạo xong tất cả thông báo!');
+        }
+
+        // Xử lý khi audio kết thúc
+        audioPlayer.addEventListener('ended', function() {
+            console.log('Audio đã phát xong');
+        });
+
+        // Xử lý lỗi khi load audio
+        audioPlayer.addEventListener('error', function() {
+            console.error('Không thể phát audio');
+        });
+    </script>
+</body>
+</html>

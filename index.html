@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hy Hùng - Portfolio</title>
+    <link rel="icon" href="./avata.jpg" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Biến màu sắc chủ đề vàng */
+        :root {
+            --primary-yellow: #FFD700;
+            --secondary-yellow: #FFA500;
+            --dark-yellow: #FF8C00;
+            --light-yellow: #FFF8DC;
+            --gold-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            --white: #FFFFFF;
+            --black: #333333;
+            --gray: #666666;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Body và background */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Hiệu ứng hạt nền */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+
+        /* Container chính */
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px var(--shadow);
+            border: 2px solid var(--primary-yellow);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Phần avatar */
+        .avatar-section {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .avatar-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary-yellow);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+
+        .avatar-image:hover {
+            transform: scale(1.05);
+            border-color: var(--secondary-yellow);
+            box-shadow: 0 12px 40px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Hiệu ứng vòng sáng sau avatar */
+        .avatar-section::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 136px;
+            height: 136px;
+            border-radius: 50%;
+            background: var(--gold-gradient);
+            z-index: -1;
+            opacity: 0.3;
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { 
+                transform: translateX(-50%) scale(1); 
+                opacity: 0.3; 
+            }
+            50% { 
+                transform: translateX(-50%) scale(1.1); 
+                opacity: 0.5; 
+            }
+        }
+
+        /* Tiêu đề */
+        .name-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--black);
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px var(--shadow);
+        }
+
+        /* Mô tả */
+        .description-text {
+            color: var(--gray);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 35px;
+            font-weight: 400;
+        }
+
+        /* Grid các nút mạng xã hội */
+        .social-buttons-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Style chung cho các nút */
+        .social-button {
+            background: var(--white);
+            border: 2px solid var(--primary-yellow);
+            border-radius: 16px;
+            padding: 16px 24px;
+            color: var(--black);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hiệu ứng shine cho các nút */
+        .social-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .social-button:hover::before {
+            left: 100%;
+        }
+
+        .social-button:hover {
+            background: var(--primary-yellow);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+            color: var(--white);
+        }
+
+        .social-button i {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Style riêng cho từng loại nút */
+        .phone-button {
+            background: var(--gold-gradient);
+            color: var(--white);
+        }
+
+        .phone-button:hover {
+            background: linear-gradient(135deg, #FFA500 0%, #FF8C00 100%);
+        }
+
+        .facebook-button {
+            border-color: #1877F2;
+        }
+
+        .facebook-button:hover {
+            background: #1877F2;
+        }
+
+        .zalo-button {
+            border-color: #0068FF;
+        }
+
+        .zalo-button:hover {
+            background: #0068FF;
+        }
+
+        .tiktok-button {
+            border-color: #000000;
+        }
+
+        .tiktok-button:hover {
+            background: #000000;
+        }
+
+        .github-button {
+            border-color: #333333;
+        }
+
+        .github-button:hover {
+            background: #333333;
+        }
+
+        /* Hiệu ứng hạt bay */
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-yellow);
+            border-radius: 50%;
+            animation: float-up 6s infinite linear;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .avatar-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            .avatar-section::after {
+                width: 116px;
+                height: 116px;
+            }
+
+            .name-title {
+                font-size: 24px;
+            }
+
+            .description-text {
+                font-size: 14px;
+            }
+
+            .social-button {
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+
+            .social-button i {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .main-container {
+                padding: 25px 15px;
+            }
+
+            .avatar-image {
+                width: 80px;
+                height: 80px;
+            }
+
+            .avatar-section::after {
+                width: 96px;
+                height: 96px;
+            }
+
+            .name-title {
+                font-size: 22px;
+            }
+
+            .social-button {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+        }
+
+        /* Vị trí các hạt bay */
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 0.5s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 1.5s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 2.5s; }
+        .particle:nth-child(10) { left: 95%; animation-delay: 3.5s; }
+    </style>
+</head>
+
+<body>
+    <!-- Hiệu ứng hạt bay -->
+    <div class="floating-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Container chính -->
+    <div class="main-container">
+        <!-- Phần avatar -->
+        <div class="avatar-section">
+            <img class="avatar-image" src="./avata.jpg" alt="Hy Hùng">
+        </div>
+        
+        <!-- Tên -->
+        <h3 class="name-title">Hy Hùng</h3>
+
+        <!-- Mô tả -->
+        <p class="description-text">Lập trình viên Full-Stack Developer</p>
+
+        <!-- Các nút mạng xã hội -->
+        <div class="social-buttons-grid">
+            <!-- Nút gọi điện -->
+            <a href="tel:+84344175963" class="social-button phone-button">
+                <i class="fas fa-phone-alt"></i>
+                <span>Gọi cho tôi</span>
+            </a>
+            
+            <!-- Nút Facebook -->
+            <a href="https://www.facebook.com/hyhung.1205" class="social-button facebook-button">
+                <i class="fab fa-facebook"></i>
+                <span>Facebook</span>
+            </a>
+            
+            <!-- Nút Zalo -->
+            <a href="https://zaloapp.com/qr/p/1m2k4bst4uc4t?src=qr" class="social-button zalo-button">
+                <i class="fas fa-comments"></i>
+                <span>Zalo</span>
+            </a>
+            
+            <!-- Nút TikTok -->
+            <a href="https://www.tiktok.com/@hyhung_" class="social-button tiktok-button">
+                <i class="fab fa-tiktok"></i>
+                <span>TikTok</span>
+            </a>
+            
+            <!-- Nút GitHub -->
+            <a href="https://github.com/xiaolamm" class="social-button github-button">
+                <i class="fab fa-github"></i>
+                <span>GitHub</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
