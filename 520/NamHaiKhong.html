@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>201314</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            background: hsl(329, 100%, 92%) no-repeat center center;
+            /* Màu nền nhẹ nhàng hơn */
+            background-size: cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .love_you {
+            position: absolute;
+            left: 50%;
+            top: 45%;
+            transform: translateX(-50%);
+            z-index: 2;
+            font-family: 'Dancing Script', cursive;
+            /* Font chữ mềm mại hơn */
+            font-size: 2.5rem;
+            /* Chữ lớn hơn */
+            font-weight: bold;
+            color: #ff69b4;
+            /* Màu hồng tỏ tình */
+            text-align: center;
+            letter-spacing: .1rem;
+            animation: love-xf 1.2s alternate ease-in-out;
+            user-select: none;
+            text-shadow: 0 0 10px #fff;
+        }
+
+        #lovexf {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        @keyframes love-xf {
+            0% {
+                opacity: 0.2;
+                filter: blur(5px);
+                letter-spacing: .2rem;
+            }
+
+            100% {
+                opacity: 1;
+                filter: blur(0);
+                letter-spacing: .1rem;
+            }
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 100px;
+            margin-top: 200px;
+            z-index: 2;
+        }
+
+        button {
+            padding: 15px 30px;
+            /* Nút to hơn */
+            font-size: 18px;
+            margin: 5px;
+            cursor: pointer;
+            position: relative;
+            border-radius: 30px;
+            background-color: #fce4ec;
+            /* Màu hồng nhạt hơn cho nút */
+            border: 2px solid #ff69b4;
+            color: #ff69b4;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #ff69b4;
+            color: white
+        }
+
+        .falling-text {
+            position: fixed;
+            top: -10vh;
+            font-family: 'Mali', cursive;
+            animation-name: fall;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            color: #ff6f6f;
+            text-shadow:
+                0 0 5px #9eb5ff;
+        }
+
+        @keyframes fall {
+            0% {
+                top: -10vh;
+            }
+
+            100% {
+                top: 100vh;
+            }
+        }
+
+        @keyframes starBlink {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mali&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <p class="love_you" id="loveText">Tớ thích cậu, hẹn hò với tớ nhé ???</p>
+    <canvas id="lovexf"></canvas>
+    <div class="button-container">
+        <button id="yes-button" onclick="showAlert()">Tớ đồng ý!</button>
+        <button id="no-button" onmouseover="moveButton(); changeText();">Để tớ suy nghĩ...</button>
+    </div>
+    <div id="particles-js"></div>
+
+</body>
+<script>
+    var texts = [
+        "Nghĩ gì nữa chứ, đồng ý đi mà!",
+        "Cục cưng ơi!",
+        "Đừng làm vậy với anh",
+        "Anh đang buồn lắm",
+        "Hãy cho anh một cơ hội nhé!"
+    ];
+
+    function showAlert() {
+        var loveText = document.getElementById("loveText");
+        // loveText.innerText = "Thật là tốt, tớ rất vui vì cậu đồng ý!\nMình sẽ có những ngày thật đẹp bên nhau nhé 🥰\nAnh yêu em nhiều lắm 🥰";
+
+        // Ẩn các nút
+        document.getElementById("no-button").style.display = "none";
+        document.getElementById("yes-button").style.display = "none";
+
+        // Ẩn canvas trái tim
+        document.getElementById("lovexf").style.display = "none";
+
+        // Ẩn text sau 5s
+        loveText.style.display = "none";
+
+        // Tạo hiệu ứng chữ rơi
+        createFallingTextEffect();
+    }
+
+    function createFallingTextEffect() {
+        // Thay đổi màu nền
+        document.body.style.backgroundColor = "hsl(329, 100%, 92%)";
+
+        // Tạo background ngôi sao
+        let starBackground = document.getElementById("star-background");
+        if (!starBackground) {
+            starBackground = document.createElement("div");
+            starBackground.id = "star-background";
+            document.body.appendChild(starBackground);
+
+            Object.assign(starBackground.style, {
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                backgroundColor: "rgba(18, 18, 18, 0.95)",
+                zIndex: "-1",
+                pointerEvents: "none",
+                overflow: "hidden"
+            });
+
+            const starCount = 80;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement("div");
+                star.className = "star";
+                starBackground.appendChild(star);
+
+                const size = Math.random() * 2 + 1 + "px";
+                const left = Math.random() * 100 + "vw";
+                const top = Math.random() * 100 + "vh";
+                const delay = Math.random() * 3 + "s";
+                const duration = (Math.random() * 2 + 1) + "s";
+                star.style.cssText = `
+                    position: absolute;
+                    width: ${size};
+                    height: ${size};
+                    background: white;
+                    border-radius: 50%;
+                    left: ${left};
+                    top: ${top};
+                    opacity: 0;
+                    animation: starBlink ${duration} ease-in-out infinite;
+                    animation-delay: ${delay};
+                `;
+            }
+        }
+
+        // Thêm CSS cho hiệu ứng ngôi sao
+        if (!document.getElementById("star-animation")) {
+            const style = document.createElement("style");
+            style.id = "star-animation";
+            style.textContent = `
+                @keyframes starBlink {
+                    0%, 100% { opacity: 0; }
+                    50% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Tạo chữ rơi
+        const fallingWords = ["❤", "Anh yêu em", "Mãi yêu em", "Em mãi là của anh", "Forever Love", "Together Forever", "My Love", "Sweet Heart", "Love You", "Forever Yours"];
+
+        const layers = [
+            { fontSize: 32, opacity: 1, duration: 4, positions: [] },
+            { fontSize: 24, opacity: 0.8, duration: 5, positions: [] },
+            { fontSize: 20, opacity: 0.7, duration: 6, positions: [] },
+            { fontSize: 16, opacity: 0.6, duration: 7, positions: [] },
+            { fontSize: 12, opacity: 0.5, duration: 8, positions: [] }
+        ];
+
+        function isPositionValid(positions, left) {
+            return positions.every(pos => Math.abs(pos - left) > 8);
+        }
+
+        const interval = setInterval(() => {
+            const span = document.createElement("span");
+            span.className = "falling-text";
+            span.textContent = fallingWords[Math.floor(Math.random() * fallingWords.length)];
+
+            const layerIndex = Math.floor(Math.random() * layers.length);
+            const layer = layers[layerIndex];
+
+            let left;
+            let attempts = 0;
+            do {
+                left = Math.random() * 100;
+                attempts++;
+                if (attempts > 30) break;
+            } while (!isPositionValid(layer.positions, left));
+
+            layer.positions.push(left);
+
+            span.style.left = left + "vw";
+            span.style.fontSize = layer.fontSize + "px";
+            span.style.opacity = layer.opacity;
+            span.style.animationDuration = layer.duration + "s";
+
+            document.body.appendChild(span);
+
+            setTimeout(() => {
+                span.remove();
+                const index = layer.positions.indexOf(left);
+                if (index > -1) {
+                    layer.positions.splice(index, 1);
+                }
+            }, layer.duration * 1000 + 500);
+        }, 100);
+    }
+
+    function moveButton() {
+        var button = document.getElementById("no-button");
+        var x = Math.floor(Math.random() * (window.innerWidth - button.offsetWidth));
+        var y = Math.floor(Math.random() * (window.innerHeight - button.offsetHeight));
+        button.style.position = "absolute";
+        button.style.left = x + "px";
+        button.style.top = y + "px";
+    }
+
+    function changeText() {
+        var loveText = document.getElementById("loveText");
+        var randomIndex = Math.floor(Math.random() * texts.length);
+        loveText.innerText = texts[randomIndex];
+    }
+</script>
+<script>
+    var settings = {
+        particles: {
+            length: 500, // maximum amount of particles
+            duration: 2, // particle duration in sec
+            velocity: 100, // particle velocity in pixels/sec
+            effect: -0.6, // play with this for a nice effect
+            size: 28, // particle size in pixels
+        },
+    };
+    (function () {
+        var b = 0; var c = ["ms", "moz", "webkit", "o"]; for (var a = 0; a < c.length && !window.requestAnimationFrame; ++a) { window.requestAnimationFrame = window[c[a] + "RequestAnimationFrame"]; window.cancelAnimationFrame = window[c[a] + "CancelAnimationFrame"] || window[c[a] + "CancelRequestAnimationFrame"] } if (!window.requestAnimationFrame) { window.requestAnimationFrame = function (h, e) { var d = new Date().getTime(); var f = Math.max(0, 16 - (d - b)); var g = window.setTimeout(function () { h(d + f) }, f); b = d + f; return g } } if (!window.cancelAnimationFrame) { window.cancelAnimationFrame = function (d) { clearTimeout(d) } }
+    }());
+    var Point = (function () {
+        function Point(x, y) {
+            this.x = (typeof x !== 'undefined') ? x : 0;
+            this.y = (typeof y !== 'undefined') ? y : 0;
+        }
+        Point.prototype.clone = function () {
+            return new Point(this.x, this.y);
+        };
+        Point.prototype.length = function (length) {
+            if (typeof length == 'undefined')
+                return Math.sqrt(this.x * this.x + this.y * this.y);
+            this.normalize();
+            this.x *= length;
+            this.y *= length;
+            return this;
+        };
+        Point.prototype.normalize = function () {
+            var length = this.length();
+            this.x /= length;
+            this.y /= length;
+            return this;
+        };
+        return Point;
+    })();
+    var Particle = (function () {
+        function Particle() {
+            this.position = new Point();
+            this.velocity = new Point();
+            this.acceleration = new Point();
+            this.age = 0;
+        }
+        Particle.prototype.initialize = function (x, y, dx, dy) {
+            this.position.x = x;
+            this.position.y = y;
+            this.velocity.x = dx;
+            this.velocity.y = dy;
+            this.acceleration.x = dx * settings.particles.effect;
+            this.acceleration.y = dy * settings.particles.effect;
+            this.age = 0;
+        };
+        Particle.prototype.update = function (deltaTime) {
+            this.position.x += this.velocity.x * deltaTime;
+            this.position.y += this.velocity.y * deltaTime;
+            this.velocity.x += this.acceleration.x * deltaTime;
+            this.velocity.y += this.acceleration.y * deltaTime;
+            this.age += deltaTime;
+        };
+        Particle.prototype.draw = function (context, image) {
+            function ease(t) {
+                return (--t) * t * t + 1;
+            }
+            var size = image.width * ease(this.age / settings.particles.duration);
+            context.globalAlpha = 1 - this.age / settings.particles.duration;
+            context.drawImage(image, this.position.x - size / 2, this.position.y - size / 2, size, size);
+        };
+        return Particle;
+    })();
+    var ParticlePool = (function () {
+        var particles,
+            firstActive = 0,
+            firstFree = 0,
+            duration = settings.particles.duration;
+
+        function ParticlePool(length) {
+            particles = new Array(length);
+            for (var i = 0; i < particles.length; i++)
+                particles[i] = new Particle();
+        }
+        ParticlePool.prototype.add = function (x, y, dx, dy) {
+            particles[firstFree].initialize(x, y, dx, dy);
+            firstFree++;
+            if (firstFree == particles.length) firstFree = 0;
+            if (firstActive == firstFree) firstActive++;
+            if (firstActive == particles.length) firstActive = 0;
+        };
+        ParticlePool.prototype.update = function (deltaTime) {
+            var i;
+            if (firstActive < firstFree) {
+                for (i = firstActive; i < firstFree; i++)
+                    particles[i].update(deltaTime);
+            }
+            if (firstFree < firstActive) {
+                for (i = firstActive; i < particles.length; i++)
+                    particles[i].update(deltaTime);
+                for (i = 0; i < firstFree; i++)
+                    particles[i].update(deltaTime);
+            }
+            while (particles[firstActive].age >= duration && firstActive != firstFree) {
+                firstActive++;
+                if (firstActive == particles.length) firstActive = 0;
+            }
+        };
+        ParticlePool.prototype.draw = function (context, image) {
+            if (firstActive < firstFree) {
+                for (i = firstActive; i < firstFree; i++)
+                    particles[i].draw(context, image);
+            }
+            if (firstFree < firstActive) {
+                for (i = firstActive; i < particles.length; i++)
+                    particles[i].draw(context, image);
+                for (i = 0; i < firstFree; i++)
+                    particles[i].draw(context, image);
+            }
+        };
+        return ParticlePool;
+    })();
+    (function (canvas) {
+        var context = canvas.getContext('2d'),
+            particles = new ParticlePool(settings.particles.length),
+            particleRate = settings.particles.length / settings.particles.duration, // particles/sec
+            time;
+        function pointOnHeart(t) {
+            return new Point(
+                160 * Math.pow(Math.sin(t), 3),
+                130 * Math.cos(t) - 50 * Math.cos(2 * t) - 20 * Math.cos(3 * t) - 10 * Math.cos(4 * t) + 25
+            );
+        }
+        var image = (function () {
+            var canvas = document.createElement('canvas'),
+                context = canvas.getContext('2d');
+            canvas.width = settings.particles.size;
+            canvas.height = settings.particles.size;
+            function to(t) {
+                var point = pointOnHeart(t);
+                point.x = settings.particles.size / 2 + point.x * settings.particles.size / 350;
+                point.y = settings.particles.size / 2 - point.y * settings.particles.size / 350;
+                return point;
+            }
+            context.beginPath();
+            var t = -Math.PI;
+            var point = to(t);
+            context.moveTo(point.x, point.y);
+            while (t < Math.PI) {
+                t += 0.01; // baby steps!
+                point = to(t);
+                context.lineTo(point.x, point.y);
+            }
+            context.closePath();
+            context.fillStyle = '#ff69b4'; /* Màu hồng đậm hơn cho trái tim */
+            context.fill();
+            var image = new Image();
+            image.src = canvas.toDataURL();
+            return image;
+        })();
+        function render() {
+            requestAnimationFrame(render);
+            var newTime = new Date().getTime() / 1000,
+                deltaTime = newTime - (time || newTime);
+            time = newTime;
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            var amount = particleRate * deltaTime;
+            for (var i = 0; i < amount; i++) {
+                var pos = pointOnHeart(Math.PI - 2 * Math.PI * Math.random());
+                var dir = pos.clone().length(settings.particles.velocity);
+                particles.add(canvas.width / 2 + pos.x, canvas.height / 2 - pos.y, dir.x, -dir.y);
+            }
+            particles.update(deltaTime);
+            particles.draw(context, image);
+        }
+        function onResize() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+        }
+        window.onresize = onResize;
+        setTimeout(function () {
+            onResize();
+            render();
+        }, 10);
+    })(document.getElementById('lovexf'));
+</script>
+
+</html>
