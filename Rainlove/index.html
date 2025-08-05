@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>RainLove</title>
+    <link rel="icon" href="gift.ico" type="image/png">
+
+    <style>
+        @import url("https://fonts.googleapis.com/css?family=Raleway:900&display=swap");
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+            height: 100%;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .text {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+            z-index: 2;
+        }
+
+        #dotCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #textAnimation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: red;
+            display: none;
+        }
+
+        #pinkboard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+        }
+
+        #text1,
+        #text2 {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: pink;
+            font-family: "Raleway", sans-serif;
+            font-size: 35pt;
+            user-select: none;
+        }
+
+        #startButton {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            font-family: "Raleway", sans-serif;
+            text-align: center;
+            background-color: rgba(255, 192, 203, 0.1);
+            padding: 20px 40px;
+            border: 2px solid pink;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 10;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+
+        #rotateAlert {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90vw;
+            max-width: 400px;
+            color: #ffffff;
+            font-family: 'Raleway', sans-serif;
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(255, 182, 193, 0.2);
+            font-size: 18px;
+            line-height: 1.4;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="rainCanvas"></canvas>
+    <canvas id="dotCanvas" class="canvas"></canvas>
+    <div id="textAnimation" style="display:none;">
+        <span id="text1"></span>
+        <span id="text2"></span>
+    </div>
+    <canvas id="pinkboard" style="display:none;"></canvas>
+    <div id="startButton">Mở món quà bí mật</div>
+    <div id="rotateAlert">
+        <div class="rotateText">
+            Vui lòng xoay ngang màn hình
+        </div>
+    </div>
+
+    <script>
+        // Lấy các phần tử HTML
+        const rotateAlert = document.getElementById('rotateAlert');
+        const startButton = document.getElementById('startButton');
+        const audio = new Audio('Ly.mp3');
+
+        // Kiểm tra màn hình dọc
+        function isPortrait() {
+            return window.innerHeight > window.innerWidth;
+        }
+
+        // Hiển thị cảnh báo nếu màn hình dọc
+        function checkOrientation() {
+            rotateAlert.style.display = isPortrait() ? 'flex' : 'none';
+        }
+
+        // Gọi hàm kiểm tra khi tải trang và khi thay đổi kích thước/hướng
+        checkOrientation();
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
+        // Khi nhấn nút bắt đầu
+        startButton.addEventListener('click', async () => {
+            audio.play();
+
+            // Yêu cầu fullscreen nếu có hỗ trợ
+            if (document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+            }
+
+            // Ẩn nút bắt đầu và cảnh báo
+            startButton.style.display = 'none';
+            rotateAlert.style.display = 'none';
+
+            // Bắt đầu hiệu ứng mưa
+            startRainEffect();
+
+            // Hiển thị các phần tử canvas khác
+            document.getElementById('dotCanvas').style.display = 'block';
+            document.getElementById('pinkboard').style.display = 'block';
+
+            // Thêm script phụ nếu cần
+            const script = document.createElement('script');
+            script.src = './script.js';
+            document.body.appendChild(script);
+        });
+
+        // Hàm tạo hiệu ứng mưa chữ
+        function startRainEffect() {
+            const canvas = document.getElementById('rainCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Cập nhật kích thước canvas
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            // Text
+            const message = "I LOVE U".split('');
+            const fontSize = 20;
+            const columns = Math.floor(canvas.width / fontSize);
+            const drops = Array(columns).fill(1);
+
+            function draw() {
+                // Tô nền mờ
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Vẽ chữ màu hồng
+                ctx.fillStyle = '#f584b7';
+                ctx.font = fontSize + 'px arial';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const char = message[Math.floor(Math.random() * message.length)];
+                    ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+                    // Reset dòng nếu vượt quá chiều cao hoặc ngẫu nhiên
+                    if (drops[i] * fontSize > canvas.height || Math.random() > 0.95) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            setInterval(draw, 50);
+        }
+
+    </script>
+
+</body>
+
+</html>

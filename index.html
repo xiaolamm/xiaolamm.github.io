@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hy Hùng - Portfolio</title>
-    <link rel="icon" href="./avata.jpg" type="image/x-icon">
+    <title>Huy Hùng</title>
+    <link rel="icon" href="image/user.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -16,13 +16,13 @@
             box-sizing: border-box;
         }
 
-        /* Biến màu sắc chủ đề vàng */
+        /* Biến màu sắc chủ đề lam */
         :root {
-            --primary-yellow: #FFD700;
-            --secondary-yellow: #FFA500;
-            --dark-yellow: #FF8C00;
-            --light-yellow: #FFF8DC;
-            --gold-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            --primary-blue: #007BFF;
+            --secondary-blue: #0056b3;
+            --dark-blue: #003366;
+            --light-blue: #E9F4FF;
+            --blue-gradient: linear-gradient(135deg, #007BFF 0%, #00C6FF 100%);
             --white: #FFFFFF;
             --black: #333333;
             --gray: #666666;
@@ -32,7 +32,7 @@
         /* Body và background */
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+            background: linear-gradient(135deg, #007BFF 0%, #00C6FF 50%, #4FA3E2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -60,11 +60,11 @@
             backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 40px;
-            max-width: 400px;
+            max-width: 450px;
             width: 100%;
             text-align: center;
             box-shadow: 0 25px 50px var(--shadow);
-            border: 2px solid var(--primary-yellow);
+            border: 2px solid var(--primary-blue);
             position: relative;
             z-index: 1;
         }
@@ -80,15 +80,15 @@
             height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid var(--primary-yellow);
+            border: 4px solid var(--primary-blue);
             transition: all 0.3s ease;
             box-shadow: 0 8px 32px var(--shadow);
         }
 
         .avatar-image:hover {
             transform: scale(1.05);
-            border-color: var(--secondary-yellow);
-            box-shadow: 0 12px 40px rgba(255, 215, 0, 0.3);
+            border-color: var(--secondary-blue);
+            box-shadow: 0 12px 40px rgba(0, 123, 255, 0.3);
         }
 
         /* Hiệu ứng vòng sáng sau avatar */
@@ -101,7 +101,7 @@
             width: 136px;
             height: 136px;
             border-radius: 50%;
-            background: var(--gold-gradient);
+            background: var(--blue-gradient);
             z-index: -1;
             opacity: 0.3;
             animation: pulse-glow 2s infinite;
@@ -146,7 +146,7 @@
         /* Style chung cho các nút */
         .social-button {
             background: var(--white);
-            border: 2px solid var(--primary-yellow);
+            border: 2px solid var(--primary-blue);
             border-radius: 16px;
             padding: 16px 24px;
             color: var(--black);
@@ -170,7 +170,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.3), transparent);
             transition: left 0.5s;
         }
 
@@ -179,9 +179,9 @@
         }
 
         .social-button:hover {
-            background: var(--primary-yellow);
+            background: var(--primary-blue);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
             color: var(--white);
         }
 
@@ -193,12 +193,12 @@
 
         /* Style riêng cho từng loại nút */
         .phone-button {
-            background: var(--gold-gradient);
+            background: var(--blue-gradient);
             color: var(--white);
         }
 
         .phone-button:hover {
-            background: linear-gradient(135deg, #FFA500 0%, #FF8C00 100%);
+            background: linear-gradient(135deg, #0056b3 0%, #003366 100%);
         }
 
         .facebook-button {
@@ -248,7 +248,7 @@
             position: absolute;
             width: 4px;
             height: 4px;
-            background: var(--primary-yellow);
+            background: var(--white); /* Đổi màu hạt thành trắng để nổi bật trên nền xanh */
             border-radius: 50%;
             animation: float-up 6s infinite linear;
         }
@@ -341,11 +341,251 @@
         .particle:nth-child(8) { left: 80%; animation-delay: 1.5s; }
         .particle:nth-child(9) { left: 90%; animation-delay: 2.5s; }
         .particle:nth-child(10) { left: 95%; animation-delay: 3.5s; }
+
+        /* Phần ngăn cách */
+        .divider-section {
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider-line {
+            height: 2px;
+            background: var(--blue-gradient);
+            border-radius: 1px;
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .divider-text {
+            background: var(--white);
+            padding: 0 20px;
+            color: var(--primary-blue);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid var(--primary-blue);
+            border-radius: 20px;
+        }
+
+        /* Grid các nút chuyển trang */
+        .page-buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* Style cho các nút chuyển trang */
+        .page-button {
+            background: var(--white);
+            border: 2px solid var(--primary-blue);
+            border-radius: 12px;
+            padding: 10px 12px;
+            color: var(--black);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 70px;
+        }
+
+        .page-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .page-button:hover::before {
+            left: 100%;
+        }
+
+        .page-button:hover {
+            background: var(--primary-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
+            color: var(--white);
+        }
+
+        .page-button i {
+            font-size: 18px;
+            width: 18px;
+            text-align: center;
+        }
+
+        .page-button span {
+            font-size: 11px;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        /* Style riêng cho từng nút */
+        .love-button {
+            border-color: #FF6B9D;
+        }
+
+        .love-button:hover {
+            background: #FF6B9D;
+        }
+
+        .memory-button {
+            border-color: #4CAF50;
+        }
+
+        .memory-button:hover {
+            background: #4CAF50;
+        }
+
+        .anniversary-button {
+            border-color: #FF5722;
+        }
+
+        .anniversary-button:hover {
+            background: #FF5722;
+        }
+
+        .planet-button {
+            border-color: #9C27B0;
+        }
+
+        .planet-button:hover {
+            background: #9C27B0;
+        }
+
+        .sky-button {
+            border-color: #2196F3;
+        }
+
+        .sky-button:hover {
+            background: #2196F3;
+        }
+
+        .tranbonho-button {
+            border-color: #FF9800;
+        }
+
+        .tranbonho-button:hover {
+            background: #FF9800;
+        }
+
+        .demngay-button {
+            border-color: #E91E63;
+        }
+
+        .demngay-button:hover {
+            background: #E91E63;
+        }
+
+        .birthday-button {
+            border-color: #FF69B4;
+        }
+
+        .birthday-button:hover {
+            background: #FF69B4;
+        }
+
+        .rain-button {
+            border-color: #00BCD4;
+        }
+
+        .rain-button:hover {
+            background: #00BCD4;
+        }
+
+        .mail-button {
+            border-color: #FFC107;
+        }
+
+        .mail-button:hover {
+            background: #FFC107;
+        }
+
+        .tet-button {
+            border-color: #4CAF50;
+        }
+
+        .tet-button:hover {
+            background: #4CAF50;
+        }
+
+        /* Lớp disable cho các button */
+        .disable {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .disable::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(128, 128, 128, 0.3);
+            border-radius: inherit;
+            z-index: 1;
+        }
+
+        .disable:hover {
+            transform: none !important;
+            background: var(--white) !important;
+            color: var(--black) !important;
+            box-shadow: none !important;
+        }
+
+        .disable i,
+        .disable span {
+            position: relative;
+            z-index: 2;
+        }
+        .d-none{
+            display: none;
+        }
+
+        /* Responsive cho grid nút chuyển trang */
+        @media (max-width: 480px) {
+            .page-buttons-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .page-button {
+                padding: 10px 14px;
+                font-size: 13px;
+                min-height: 70px;
+            }
+
+            .page-button i {
+                font-size: 18px;
+            }
+
+            .page-button span {
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <!-- Hiệu ứng hạt bay -->
     <div class="floating-particles">
         <div class="particle"></div>
         <div class="particle"></div>
@@ -359,49 +599,87 @@
         <div class="particle"></div>
     </div>
 
-    <!-- Container chính -->
     <div class="main-container">
-        <!-- Phần avatar -->
         <div class="avatar-section">
-            <img class="avatar-image" src="./avata.jpg" alt="Hy Hùng">
+            <img class="avatar-image" src="image/avata.jpg" alt="Hy Hùng">
         </div>
         
-        <!-- Tên -->
-        <h3 class="name-title">Hy Hùng</h3>
+        <h3 class="name-title">Huy Hùng</h3>
 
-        <!-- Mô tả -->
         <p class="description-text">Lập trình viên Full-Stack Developer</p>
 
-        <!-- Các nút mạng xã hội -->
         <div class="social-buttons-grid">
-            <!-- Nút gọi điện -->
             <a href="tel:+84344175963" class="social-button phone-button">
                 <i class="fas fa-phone-alt"></i>
-                <span>Gọi cho tôi</span>
+                <span>Gọi cho anh</span>
             </a>
             
-            <!-- Nút Facebook -->
             <a href="https://www.facebook.com/hyhung.1205" class="social-button facebook-button">
                 <i class="fab fa-facebook"></i>
                 <span>Facebook</span>
             </a>
             
-            <!-- Nút Zalo -->
             <a href="https://zaloapp.com/qr/p/1m2k4bst4uc4t?src=qr" class="social-button zalo-button">
                 <i class="fas fa-comments"></i>
                 <span>Zalo</span>
             </a>
             
-            <!-- Nút TikTok -->
             <a href="https://www.tiktok.com/@hyhung_" class="social-button tiktok-button">
                 <i class="fab fa-tiktok"></i>
                 <span>TikTok</span>
             </a>
             
-            <!-- Nút GitHub -->
             <a href="https://github.com/huyhung1205" class="social-button github-button">
                 <i class="fab fa-github"></i>
                 <span>GitHub</span>
+            </a>
+        </div>
+
+        <div class="divider-section">
+            <div class="divider-line"></div>
+            <span class="divider-text">Đành riêng cho Gia Mẫn</span>
+        </div>
+        
+        <div class="page-buttons-grid">
+            <a href="Planet/index.html" class="page-button planet-button">
+                <i class="fas fa-globe"></i>
+                <span>Hành tinh</span>
+            </a>
+            <a href="SkyOfLove/index.html" class="page-button sky-button">
+                <i class="fas fa-cloud"></i>
+                <span>Bầu trời</span>
+            </a>
+            <a href="TranBoNho/index.html" class="page-button tranbonho-button">
+                <i class="fas fa-heart"></i>
+                <span>Nhớ em</span>
+            </a>
+            <a href="KyNiemNgayYeu/index.html" class="page-button anniversary-button">
+                <i class="fas fa-star"></i>
+                <span>Kỷ niệm</span>
+            </a>
+            <a href="Rainlove/index.html" class="page-button rain-button">
+                <i class="fas fa-cloud-rain"></i>
+                <span>Mưa tình yêu</span>
+            </a>
+            <a href="MailChoEm/index.html" class="page-button mail-button">
+                <i class="fas fa-envelope"></i>
+                <span>Gửi mail</span>
+            </a>
+            <a href="DemNgayYeu/index.html" class="page-button memory-button disable d-none">
+                <i class="fas fa-calendar-heart"></i>
+                <span>Đếm ngày yêu</span>
+            </a>
+            <a href="SinhNhat/index.html" class="page-button birthday-button disable d-none">
+                <i class="fas fa-birthday-cake"></i>
+                <span>Sinh nhật</span>
+            </a>
+            <a href="520/NamHaiKhong.html" class="page-button love-button disable d-none">
+                <i class="fas fa-heart"></i>
+                <span>520</span>
+            </a>
+            <a href="ChucTet/index.html" class="page-button tet-button disable d-none">
+                <i class="fas fa-tree"></i>
+                <span>Chúc tết</span>
             </a>
         </div>
     </div>
