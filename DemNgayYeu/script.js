@@ -124,6 +124,8 @@ function playAudio() {
 
 // Ngày của tôi
 const yourDate = new Date("2024-08-03T00:00:00");
+// Ngày kết thúc
+const endDate = new Date("2025-08-28T11:11:11");
 
 document.addEventListener("DOMContentLoaded", function () {
   var hoursElement = document.getElementById("hours");
@@ -132,7 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var dateElement = document.querySelector("date");
 
   dateElement.textContent = Math.floor(
-    Math.floor((new Date() - yourDate) / 1000) / 60 / 60 / 24
+    Math.floor((endDate - yourDate) / 1000) / 60 / 60 / 24
   );
 
   function updateClock() {
